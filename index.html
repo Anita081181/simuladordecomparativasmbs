@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Battle Cards MP — Principalidad</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --y:#FFE600; --yd:#E6CF00;
+  --bl:#009EE3; --bld:#0077B6;
+  --dk:#1A1A2E;
+  --g:#00A650; --gb:#E6F7EE; --gbo:#9ADBB8;
+  --r:#D93025; --rb:#FEEEEE; --rbo:#F5AAAA;
+  --am:#D97706; --amb:#FEF3C7; --ambo:#FCD34D;
+  --tx:#333; --tx2:#666; --tx3:#999;
+  --bd:#E4E4E4; --bg:#F2F2F0; --wh:#fff;
+  --rad:10px; --rads:7px; --radxs:4px;
+  --sh:0 1px 8px rgba(0,0,0,.07);
+  --shm:0 4px 20px rgba(0,0,0,.10);
+  --shl:0 8px 36px rgba(0,0,0,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;min-height:100vh}
+button,input,select,textarea{font-family:inherit;font-size:14px}
+
+/* ── APP BAR ── */
+.bar{background:var(--wh);border-bottom:1px solid var(--bd);padding:0 20px;display:flex;align-items:center;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
+.logo{display:flex;align-items:center;gap:10px;padding:11px 16px 11px 0;border-right:1px solid var(--bd);margin-right:14px;flex-shrink:0}
+.logo-ic{width:32px;height:32px;background:var(--y);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--dk)}
+.logo-t{font-size:13px;font-weight:700;color:var(--dk);line-height:1.2}
+.logo-s{font-size:11px;color:var(--tx3)}
+.tabs{display:flex;gap:0}
+.tb{padding:13px 16px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--tx2);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;white-space:nowrap}
+.tb:hover{color:var(--tx);background:var(--bg)}
+.tb.on{color:var(--bl);border-bottom-color:var(--bl);font-weight:600}
+
+/* ── CONTENT ── */
+.wrap{max-width:980px;margin:0 auto;padding:20px 14px}
+.panel{display:none}.panel.on{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--wh);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden}
+.card-hd{padding:14px 18px 10px;border-bottom:1px solid var(--bd);background:#fafafa}
+.card-hd h2{font-size:14px;font-weight:700;color:var(--dk)}
+.card-hd p{font-size:11px;color:var(--tx3);margin-top:2px}
+.card-bd{padding:18px}
+
+/* ── FORM ── */
+.field{margin-bottom:13px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:11px;font-weight:600;color:var(--tx2);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1.5px solid var(--bd);border-radius:var(--rads);color:var(--tx);background:var(--wh);transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--bl)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.divider{height:1px;background:var(--bd);margin:13px 0}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rads);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--bl);color:#fff}.btn-primary:hover{background:var(--bld)}
+.btn-green{background:var(--g);color:#fff}.btn-green:hover{background:#008040}
+.btn-outline{background:var(--wh);border:1.5px solid var(--bd);color:var(--tx2)}.btn-outline:hover{background:var(--bg)}
+.btn-del{background:var(--wh);border:1.5px solid var(--rbo);color:var(--r)}.btn-del:hover{background:var(--rb)}
+.btn-wa{background:#25D366;color:#fff}.btn-wa:hover{background:#1dbc5a}
+.btn-block{width:100%;justify-content:center;padding:11px}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bg{background:var(--gb);color:var(--g);border:1px solid var(--gbo)}
+.br{background:var(--rb);color:var(--r);border:1px solid var(--rbo)}
+.ba{background:var(--amb);color:var(--am);border:1px solid var(--ambo)}
+.by{background:var(--y);color:var(--dk)}
+.bb{background:#EEF4FF;color:var(--bld);border:1px solid #BFCFFF}
+
+/* ── DATA TABLE ── */
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th{padding:7px 10px;border-bottom:1px solid var(--bd);font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em;text-align:center;background:#fafafa}
+.dt th:first-child{text-align:left}
+.dt td{padding:7px 10px;border-bottom:1px solid var(--bd);text-align:center}
+.dt td:first-child{text-align:left;color:var(--tx2);font-weight:500}
+.dt tr:last-child td{border-bottom:none}
+.dt .hl{background:#FFFBEA}.dt .hl td:first-child{color:var(--bl);font-weight:700}
+.vg{color:var(--g);font-weight:700;font-family:'DM Mono',monospace}
+.vr{color:var(--r);font-weight:600;font-family:'DM Mono',monospace}
+.vd{color:var(--g);font-size:11px;font-weight:700}
+.vn{color:var(--tx3)}
+.mono{font-family:'DM Mono',monospace}
+
+/* ── SIM LAYOUT ── */
+.sim-lay{display:grid;grid-template-columns:270px 1fr;gap:14px;align-items:start}
+@media(max-width:660px){.sim-lay{grid-template-columns:1fr}}
+.sticky{position:sticky;top:60px}
+
+/* ── PROV TABLE ── */
+.prov-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.prov-tbl th{padding:4px 8px;text-align:right;font-size:10px;font-weight:600;color:var(--tx3);background:var(--gb)}
+.prov-tbl th:first-child{text-align:left}
+.prov-tbl td{padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;border-bottom:1px solid var(--bd)}
+.prov-tbl td:first-child{text-align:left;font-family:'DM Sans',sans-serif;color:var(--tx2);white-space:nowrap}
+.prov-tbl tr:last-child td{border-bottom:none}
+.prov-tbl .sel{background:#FFFBEA;font-weight:700}
+.prov-tbl .sel td:first-child{color:var(--g)}
+.prov-tbl .sel td{color:var(--g)}
+
+/* ── RESULT ── */
+.res-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.res-title{font-size:14px;font-weight:700;color:var(--dk)}
+.res-sub{font-size:11px;color:var(--tx3);margin-top:3px}
+.big-save{text-align:right}
+.big-save .lbl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em}
+.big-save .val{font-size:28px;font-weight:800;color:var(--g);font-family:'DM Mono',monospace;line-height:1}
+.big-save .sub{font-size:10px;color:var(--tx3)}
+
+/* Desglose */
+.desg-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.desg-tbl th{padding:6px 10px;background:#fafafa;border-bottom:1px solid var(--bd);font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;text-align:center}
+.desg-tbl th:first-child{text-align:left}
+.desg-tbl td{padding:7px 10px;border-bottom:1px solid var(--bd);text-align:right;font-family:'DM Mono',monospace;font-size:12px}
+.desg-tbl td:first-child{text-align:left;font-family:'DM Sans',sans-serif;color:var(--tx2)}
+.desg-tbl .sec-row td{background:#f8f8f8;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em;padding:4px 10px}
+.desg-tbl .tot-row{background:var(--dk)}
+.desg-tbl .tot-row td{color:#fff;font-weight:700;font-size:13px;padding:9px 10px;border-bottom:none}
+.desg-tbl .rend-row td{background:var(--gb);color:var(--g);font-weight:700}
+.desg-tbl .ext-row td{background:var(--rb);color:var(--r)}
+
+/* Ecuación resumen */
+.eq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.eq-grid{grid-template-columns:1fr}}
+.eq-box{border-radius:var(--rads);padding:14px 16px}
+.eq-box.mp{background:var(--gb);border:1.5px solid var(--gbo)}
+.eq-box.comp{background:var(--rb);border:1.5px solid var(--rbo)}
+.eq-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.eq-box.mp .eq-lbl{color:var(--g)}.eq-box.comp .eq-lbl{color:var(--r)}
+.eq-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07)}
+.eq-row:last-child{border-bottom:none;font-weight:700;font-size:13px;padding-top:6px;margin-top:4px;border-top:1.5px solid currentColor}
+.eq-row span:last-child{font-family:'DM Mono',monospace;font-weight:600}
+
+/* Beneficio box */
+.bene-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+.bene-item{background:rgba(255,255,255,.07);border-radius:var(--rads);padding:12px;text-align:center}
+.bene-item .bl{font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.bene-item .bv{font-size:18px;font-weight:800;color:var(--y);font-family:'DM Mono',monospace}
+.bene-item.hi{background:var(--y)}
+.bene-item.hi .bl{color:rgba(0,0,0,.5);opacity:1}
+.bene-item.hi .bv{color:var(--dk)}
+
+/* Barras */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-lbl{font-size:11px;font-weight:600;width:80px;text-align:right;color:var(--tx2);flex-shrink:0}
+.bar-trk{flex:1;background:var(--bg);border-radius:99px;height:26px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;min-width:50px;font-family:'DM Mono',monospace}
+.bar-fill.mp{background:var(--g)}.bar-fill.comp{background:var(--r)}
+
+/* Collapse */
+.collapse-hd{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 0;border-bottom:1px solid var(--bd)}
+.collapse-hd:last-of-type{border-bottom:none}
+.collapse-hd .c-title{font-size:12px;font-weight:600;color:var(--tx2)}
+.collapse-hd .c-arr{font-size:16px;color:var(--tx3);transition:transform .2s}
+.collapse-hd.open .c-arr{transform:rotate(180deg)}
+.collapse-body{display:none;padding-top:10px}
+
+/* ── MAESTRO ── */
+.mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.mc{background:var(--wh);border:1px solid var(--bd);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh)}
+.mc-hd{padding:12px 14px 9px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.mc-name{font-size:13px;font-weight:700;color:var(--dk)}
+.mc-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.mc-acts{display:flex;gap:5px}
+.ic{width:26px;height:26px;border:1px solid var(--bd);border-radius:var(--radxs);background:var(--wh);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:var(--tx2);transition:all .15s}
+.ic:hover{background:var(--bg)}.ic.del:hover{background:var(--rb);color:var(--r);border-color:var(--rbo)}
+.mc-bd{padding:12px 14px}
+.rates-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px}
+.rmi{background:var(--bg);border-radius:var(--radxs);padding:4px 7px}
+.rmi .rl{font-size:10px;color:var(--tx3);margin-bottom:2px}
+.rmi .rv{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--tx)}
+.ext-prev{font-size:11px}
+.ext-prev .er{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--bd);color:var(--tx2)}
+.ext-prev .er:last-child{border-bottom:none}
+.ext-prev .ev{font-weight:600;color:var(--r);font-family:'DM Mono',monospace}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:14px}
+.modal-bg.open{display:flex}
+.modal{background:var(--wh);border-radius:var(--rad);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:var(--shl)}
+.modal-hd{padding:16px 18px 12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--wh);z-index:1}
+.modal-hd h3{font-size:15px;font-weight:700}
+.modal-cl{width:28px;height:28px;border:none;background:var(--bg);border-radius:var(--radxs);font-size:16px;cursor:pointer;color:var(--tx2);display:flex;align-items:center;justify-content:center}
+.modal-bd{padding:18px}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--bd);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--wh)}
+.ms{font-size:10px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;padding-bottom:7px;border-bottom:1px solid var(--bd);margin-bottom:10px;margin-top:4px}
+.ee{border:1px solid var(--bd);border-radius:var(--rads);overflow:hidden}
+.ee-row{display:grid;grid-template-columns:1fr 100px 28px;border-bottom:1px solid var(--bd)}
+.ee-row:last-child{border-bottom:none}
+.ee-row input{border:none;padding:7px 9px;font-size:13px;color:var(--tx);background:transparent;border-right:1px solid var(--bd)}
+.ee-row input:last-of-type{border-right:none}
+.ee-row input:focus{outline:none;background:#f0f8ff}
+.ee-del{border:none;background:transparent;color:var(--tx3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ee-del:hover{background:var(--rb);color:var(--r)}
+.ee-add{width:100%;padding:7px;border:none;background:var(--bg);color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;border-top:1px solid var(--bd)}
+.ee-add:hover{background:var(--bd)}
+
+/* ── PROPUESTA ── */
+.prop-tb{background:var(--wh);border-bottom:1px solid var(--bd);padding:9px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:57px;z-index:90;box-shadow:var(--sh)}
+.prop-wrap{max-width:720px;margin:0 auto;padding:18px 14px}
+.prop-doc{background:var(--wh);border-radius:var(--rad);box-shadow:var(--shl);overflow:hidden;font-family:'DM Sans',sans-serif}
+
+/* Propuesta sections */
+.p-hero{background:var(--y);padding:24px 28px 20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.p-logo-ic{width:46px;height:46px;background:var(--wh);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--bl);flex-shrink:0}
+.p-logo-t{font-size:20px;font-weight:900;color:var(--dk);line-height:1}
+.p-logo-s{font-size:11px;color:rgba(0,0,0,.5);margin-top:2px}
+.p-date .dl{font-size:10px;color:rgba(0,0,0,.5)}
+.p-date .dv{font-size:13px;font-weight:700;color:var(--dk);margin-top:2px}
+.p-seller{padding:16px 28px;background:#fafafa;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.p-name{font-size:18px;font-weight:900;color:var(--dk);text-transform:uppercase;letter-spacing:-.3px}
+.p-sub{font-size:11px;color:#888;margin-top:3px}
+.p-tag{background:var(--bl);color:#fff;border-radius:var(--rads);padding:7px 13px;text-align:center;flex-shrink:0}
+.p-tag .tl{font-size:9px;opacity:.8;text-transform:uppercase;letter-spacing:.05em}
+.p-tag .tv{font-size:12px;font-weight:700;margin-top:2px}
+
+/* Ahorro hero */
+.p-ahorro{margin:18px 28px;background:linear-gradient(135deg,var(--g) 0%,#007A3A 100%);border-radius:var(--rads);padding:22px;color:#fff;text-align:center}
+.p-ah-main-lbl{font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.p-ah-main-val{font-size:48px;font-weight:900;line-height:1;font-family:'DM Mono',monospace;letter-spacing:-2px}
+.p-ah-main-sub{font-size:12px;opacity:.7;margin-top:6px}
+.p-ah-grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;gap:0;margin-top:18px}
+@media(max-width:480px){.p-ah-grid{grid-template-columns:1fr;gap:10px}.p-ah-sep{display:none}}
+.p-ah-sep{background:rgba(255,255,255,.2);width:1px}
+.p-ah-item{text-align:center;padding:0 12px}
+.p-ah-item .al{font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.p-ah-item .av{font-size:20px;font-weight:800;font-family:'DM Mono',monospace}
+.p-ah-item .as{font-size:10px;opacity:.6;margin-top:2px}
+
+/* Barras propuesta */
+.p-sec{padding:0 28px 18px}
+.p-sec-title{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;padding:14px 0 10px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:8px}
+.p-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.p-bar-lbl{font-size:11px;font-weight:600;width:85px;text-align:right;color:var(--tx2);flex-shrink:0}
+.p-bar-trk{flex:1;background:var(--bg);border-radius:99px;height:28px;overflow:hidden}
+.p-bar-fill{height:100%;border-radius:99px;display:flex;align-items:center;padding:0 12px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;min-width:55px;font-family:'DM Mono',monospace}
+.p-bar-fill.mp{background:var(--g)}.p-bar-fill.comp{background:var(--r)}
+
+/* Costos ocultos */
+.ocultos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px}
+.oc-item{background:var(--wh);border:1.5px solid var(--rbo);border-radius:var(--rads);padding:12px 14px}
+.oc-lbl{font-size:10px;color:var(--r);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.oc-desc{font-size:12px;color:var(--tx);font-weight:600;line-height:1.3;margin-bottom:7px}
+.oc-monto{font-size:18px;font-weight:900;color:var(--r);font-family:'DM Mono',monospace}
+.oc-item.mp{border-color:var(--gbo);background:var(--gb)}
+.oc-item.mp .oc-lbl{color:var(--g)}
+.oc-item.mp .oc-monto{color:var(--g)}
+
+/* Rendimiento */
+.rend-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:460px){.rend-grid{grid-template-columns:1fr}}
+.rend-box{border-radius:var(--rads);padding:14px 16px}
+.rend-box.mp{background:var(--gb);border:1.5px solid var(--gbo)}
+.rend-box.comp{background:var(--rb);border:1.5px solid var(--rbo)}
+.rend-box .rbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.rend-box.mp .rbl{color:var(--g)}.rend-box.comp .rbl{color:var(--r)}
+.rend-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07)}
+.rend-row:last-child{border-bottom:none;font-weight:700;font-size:13px}
+.rv-mp{color:var(--g);font-weight:600;font-family:'DM Mono',monospace}
+.rv-comp{color:var(--r);font-weight:600;font-family:'DM Mono',monospace}
+
+/* Coeficientes */
+.coef-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.coef-item{background:var(--bg);border-radius:var(--rads);padding:10px;text-align:center}
+.coef-item .cl{font-size:11px;color:var(--tx2);margin-bottom:4px}
+.coef-item .ct{font-size:16px;font-weight:800;color:var(--g);font-family:'DM Mono',monospace}
+.coef-item .cs{font-size:10px;color:var(--tx3);margin-top:2px}
+.coef-item.sel{background:var(--y)}
+.coef-item.sel .cl{color:rgba(0,0,0,.6)}
+.coef-item.sel .ct{color:var(--dk)}
+
+/* Resumen final propuesta */
+.p-resumen{background:var(--dk);padding:20px 28px}
+.p-resumen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.p-res-item{background:rgba(255,255,255,.07);border-radius:var(--rads);padding:12px;text-align:center}
+.p-res-item .prl{font-size:10px;opacity:.55;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.p-res-item .prv{font-size:18px;font-weight:800;color:var(--y);font-family:'DM Mono',monospace}
+.p-res-item.hi{background:var(--y)}
+.p-res-item.hi .prl{color:rgba(0,0,0,.55);opacity:1}
+.p-res-item.hi .prv{color:var(--dk)}
+.p-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.p-asesor .pan{font-size:13px;font-weight:700;color:#fff}
+.p-asesor .pac{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.p-legal{font-size:10px;color:rgba(255,255,255,.3);text-align:right;max-width:260px;line-height:1.5}
+.p-vig{margin:0 28px 14px;background:var(--amb);border:1.5px solid var(--ambo);border-radius:var(--rads);padding:9px 14px;font-size:12px;color:var(--am);font-weight:600;display:flex;align-items:center;gap:8px}
+
+@media print{
+  .bar,.prop-tb,.prop-config-card{display:none!important}
+  .prop-wrap{padding:0;max-width:100%}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- APP BAR -->
+<div class="bar">
+  <div class="logo">
+    <div class="logo-ic">MP</div>
+    <div><div class="logo-t">Battle Cards</div><div class="logo-s">Principalidad · MLA</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tb on" onclick="setTab('sim')">⚡ Simulador</button>
+    <button class="tb" onclick="setTab('maestro')">🗂 Maestro de Tasas</button>
+    <button class="tb" onclick="setTab('propuesta')">📄 Propuesta Final</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ══ TAB SIMULADOR ══ -->
+<div class="panel on" id="tab-sim">
+<div class="sim-lay">
+
+  <!-- INPUTS -->
+  <div class="sticky">
+  <div class="card">
+    <div class="card-hd"><h2>⚡ Simulador</h2><p>Completá durante la llamada</p></div>
+    <div class="card-bd">
+
+      <div class="sec-lbl">Datos del seller</div>
+      <div class="field">
+        <label>Provincia</label>
+        <select id="s-prov" onchange="onProvChange()">
+          <optgroup label="Resto del país">
+            <option value="caba">CABA</option>
+            <option value="neuquen">Neuquén</option>
+            <option value="jujuy">Jujuy</option>
+            <option value="corrientes">Corrientes</option>
+            <option value="tierradelfuego">Tierra del Fuego</option>
+            <option value="sanluis">San Luis</option>
+            <option value="lapampa">La Pampa</option>
+            <option value="salta">Salta</option>
+            <option value="misiones">Misiones</option>
+            <option value="tucuman">Tucumán</option>
+          </optgroup>
+          <optgroup label="Buenos Aires / Chubut / Córdoba / Entre Ríos">
+            <option value="bsas">Buenos Aires</option>
+            <option value="cordoba">Córdoba</option>
+            <option value="chubut">Chubut</option>
+            <option value="entrerios">Entre Ríos</option>
+          </optgroup>
+          <optgroup label="Santa Fe">
+            <option value="santafe">Santa Fe</option>
+          </optgroup>
+          <optgroup label="Río Negro">
+            <option value="rionegro">Río Negro</option>
+          </optgroup>
+          <optgroup label="Chaco / San Juan / Santa Cruz / Sgo. del Estero">
+            <option value="chaco">Chaco</option>
+            <option value="sanjuan">San Juan</option>
+            <option value="santacruz">Santa Cruz</option>
+            <option value="santiago">Santiago del Estero</option>
+          </optgroup>
+          <optgroup label="Catamarca / Formosa / Mendoza">
+            <option value="catamarca">Catamarca</option>
+            <option value="formosa">Formosa</option>
+            <option value="mendoza">Mendoza</option>
+          </optgroup>
+          <optgroup label="La Rioja">
+            <option value="larioja">La Rioja</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>Facturación mensual ($)</label>
+        <input type="number" id="s-fact" value="5000000" min="0"/>
+      </div>
+      <div class="g2">
+        <div class="field"><label>% en cuotas</label><input type="number" id="s-pctc" value="60" min="0" max="100"/></div>
+        <div class="field"><label>% débito/1p</label><input type="number" id="s-pctd" value="40" min="0" max="100"/></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-lbl">Mercado Pago</div>
+      <div class="g2">
+        <div class="field">
+          <label>Categoría</label>
+          <select id="s-cat" onchange="onProvChange()">
+            <option value="0">Cat 1 · LT</option>
+            <option value="1">Cat 2</option>
+            <option value="2">Cat 3</option>
+            <option value="3" selected>Cat 4</option>
+            <option value="4">Cat 5</option>
+            <option value="5">Cat 6</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Liberación MP</label>
+          <select id="s-lib" onchange="onProvChange()">
+            <option value="0" selected>Al momento</option>
+            <option value="1">2 días corridos</option>
+            <option value="2">5 días corridos</option>
+            <option value="3">10 días corridos</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Round / Financiación</label>
+        <select id="s-round">
+          <option value="lt">LT</option><option value="r1">R1</option><option value="r2">R2</option>
+          <option value="r3">R3</option><option value="r4">R4</option><option value="r5" selected>R5</option>
+          <option value="r5p">R5 Plus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Cuota más usada</label>
+        <select id="s-cuota">
+          <option value="0">2 cuotas</option><option value="1" selected>3 cuotas</option>
+          <option value="2">6 cuotas</option><option value="3">9 cuotas</option><option value="4">12 cuotas</option>
+        </select>
+      </div>
+
+      <!-- Preview tasas MP por provincia -->
+      <div id="prov-preview" style="border:1px solid var(--gbo);border-radius:var(--rads);overflow:hidden;margin-top:4px">
+        <div style="background:var(--gb);padding:5px 10px;font-size:10px;color:var(--g);font-weight:700;border-bottom:1px solid var(--gbo)">Tasas MP según provincia y categoría</div>
+        <table class="prov-tbl" id="prov-tbl"></table>
+        <div style="background:var(--gb);padding:3px 10px;font-size:10px;color:var(--tx3)">Cat1=0-$3M · Cat2=$3-6M · Cat3=$6-12M · Cat4=$12-23M · Cat5=$23-45M · Cat6=+$45M</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="sec-lbl">Competidor</div>
+      <div class="field">
+        <label>Competidor</label>
+        <select id="s-comp" onchange="onCompChange()"></select>
+      </div>
+      <div class="field">
+        <label>Liberación competidor</label>
+        <select id="s-libc">
+          <option value="inmediata">Inmediata</option>
+          <option value="1dia_h">1 día hábil</option>
+          <option value="2dias_h" selected>2 días hábiles</option>
+          <option value="10dias_h">10 días hábiles</option>
+        </select>
+      </div>
+      <div class="sec-lbl" style="margin-top:10px">Costos extras que aplican</div>
+      <div id="extras-check"></div>
+
+      <div class="divider"></div>
+      <div class="field"><label>TNA MP (%)</label><input type="number" id="s-tna" value="19.80" step="0.1" min="0"/></div>
+      <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="calcular()">Calcular →</button>
+    </div>
+  </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="result-area">
+    <div class="card" style="padding:48px 24px;text-align:center;color:var(--tx3)">
+      <div style="font-size:32px;margin-bottom:10px">📊</div>
+      <p style="font-size:13px">Completá los datos y calculá el ahorro</p>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══ TAB MAESTRO ══ -->
+<div class="panel" id="tab-maestro">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div>
+      <h2 style="font-size:16px;font-weight:700;color:var(--dk)">Maestro de Tasas</h2>
+      <p style="font-size:12px;color:var(--tx3);margin-top:3px">Editá las tasas. El simulador y la propuesta usan estos datos en tiempo real.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal()">+ Agregar competidor</button>
+  </div>
+  <div class="mc-grid" id="mc-grid"></div>
+</div>
+
+<!-- ══ TAB PROPUESTA ══ -->
+<div class="panel" id="tab-propuesta">
+  <div class="card prop-config-card" style="max-width:680px;margin:0 auto 18px">
+    <div class="card-hd"><h2>📋 Datos de la propuesta</h2><p>Se combina con el último cálculo del simulador</p></div>
+    <div class="card-bd">
+      <div class="g2">
+        <div class="field"><label>Nombre del comercio</label><input type="text" id="p-nombre" placeholder="Ej: Supermercado El Sol"/></div>
+        <div class="field"><label>CUIT</label><input type="text" id="p-cuit" placeholder="30-12345678-9"/></div>
+        <div class="field"><label>Contacto / decisor</label><input type="text" id="p-contacto" placeholder="Ej: María García"/></div>
+        <div class="field">
+          <label>Condición fiscal</label>
+          <select id="p-fiscal">
+            <option value="">—</option>
+            <option>Monotributista</option><option>IVA RI Persona Física</option>
+            <option>IVA RI Persona Jurídica</option><option>Exento</option>
+          </select>
+        </div>
+        <div class="field"><label>Nombre del ejecutivo</label><input type="text" id="p-asesor" placeholder="Tu nombre"/></div>
+        <div class="field"><label>Teléfono / WhatsApp</label><input type="text" id="p-tel" placeholder="Ej: 1169209586"/></div>
+        <div class="field"><label>Email (@mercadolibre.com)</label><input type="text" id="p-email" placeholder="usuario"/></div>
+        <div class="field">
+          <label>Vigencia</label>
+          <select id="p-vig">
+            <option>5 días hábiles</option><option selected>10 días hábiles</option>
+            <option>15 días hábiles</option><option>30 días corridos</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn btn-primary" onclick="genPropuesta()">✨ Generar propuesta</button>
+        <button class="btn btn-outline" onclick="window.print()">📄 Guardar PDF</button>
+        <button class="btn btn-wa" onclick="enviarWA()">💬 WhatsApp</button>
+      </div>
+    </div>
+  </div>
+  <div id="prop-out">
+    <div class="card" style="padding:48px 24px;text-align:center;color:var(--tx3);max-width:680px;margin:0 auto">
+      <div style="font-size:32px;margin-bottom:10px">📄</div>
+      <p style="font-size:13px">Primero calculá en el simulador, luego generá la propuesta</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg">
+<div class="modal">
+  <div class="modal-hd">
+    <h3 id="modal-title">Nuevo competidor</h3>
+    <button class="modal-cl" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-bd">
+    <div class="ms">Identificación</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="field"><label>Nombre</label><input type="text" id="m-name" placeholder="Ej: Payway MiPyME"/></div>
+      <div class="field"><label>Última actualización</label><input type="date" id="m-fecha"/></div>
+    </div>
+    <div class="ms">Tasas de financiación (%)</div>
+    <div class="g3" style="margin-bottom:12px">
+      <div class="field"><label>2x</label><input type="number" id="m-t2" step="0.01"/></div>
+      <div class="field"><label>3x</label><input type="number" id="m-t3" step="0.01"/></div>
+      <div class="field"><label>6x</label><input type="number" id="m-t6" step="0.01"/></div>
+      <div class="field"><label>9x</label><input type="number" id="m-t9" step="0.01"/></div>
+      <div class="field"><label>12x</label><input type="number" id="m-t12" step="0.01"/></div>
+      <div class="field"><label>18x</label><input type="number" id="m-t18" step="0.01"/></div>
+    </div>
+    <div class="ms">Procesamiento (%)</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="field"><label>Débito / 1 pago</label><input type="number" id="m-pd" step="0.01"/></div>
+      <div class="field"><label>Crédito / cuotas</label><input type="number" id="m-pc" step="0.01"/></div>
+    </div>
+    <div class="ms">Costos extras y requisitos</div>
+    <div class="ee" id="modal-ee">
+      <button class="ee-add" onclick="addEE()">+ Agregar costo / requisito</button>
+    </div>
+    <div class="ms" style="margin-top:14px">Notas de negociación</div>
+    <div class="field"><textarea id="m-notas" rows="2" style="width:100%;padding:8px 10px;border:1.5px solid var(--bd);border-radius:var(--rads);resize:vertical" placeholder="Ej: requiere CC bancaria, no tiene QR con monto..."></textarea></div>
+  </div>
+  <div class="modal-ft">
+    <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveComp()">Guardar</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ════════════════════════════════════
+// DATOS
+// ════════════════════════════════════
+
+// TASAS MP POR GRUPO DE PROVINCIA — fuente PDFs oficiales Mar26
+// Estructura: [liberacion_idx][cat_idx] donde lib: 0=inmediata,1=2dias_c,2=5dias_c,3=10dias_c
+//   y cat: 0=Cat1(LT)...5=Cat6
+const PROV_PROC = {
+  // Resto: CABA, Nqn, Jujuy, Ctes, TdF, SL, LP, Salta, Mis, Tuc
+  resto: {
+    d: [[3.25,2.79,2.29,1.89,1.49,1.19],[2.99,2.59,2.09,1.69,1.29,0.99],[2.99,2.59,2.09,1.69,1.29,0.99],[2.99,2.59,2.09,1.69,1.29,0.99]],
+    c: [[6.29,5.79,5.59,5.29,4.89,4.49],[6.29,5.79,5.59,5.29,4.89,4.49],[5.39,4.99,4.89,4.79,4.49,4.19],[4.39,4.19,4.09,3.99,3.49,2.99]],
+    p: [[3.75,3.55,3.35,3.15,2.95,2.75],[3.75,3.55,3.35,3.15,2.95,2.75],[3.50,3.30,3.10,2.90,2.70,2.50],[3.50,3.30,3.10,2.90,2.70,2.50]],
+  },
+  // Buenos Aires, Chubut, Córdoba, Entre Ríos
+  bsas: {
+    d: [[3.41,2.93,2.40,1.98,1.56,1.25],[3.14,2.72,2.19,1.77,1.35,1.04],[3.14,2.72,2.19,1.77,1.35,1.04],[3.14,2.72,2.19,1.77,1.35,1.04]],
+    c: [[6.60,6.08,5.87,5.55,5.13,4.71],[6.60,6.08,5.87,5.55,5.13,4.71],[5.66,5.24,5.13,5.03,4.71,4.40],[4.61,4.40,4.29,4.19,3.66,3.14]],
+    p: [[3.94,3.73,3.52,3.31,3.10,2.89],[3.94,3.73,3.52,3.31,3.10,2.89],[3.67,3.46,3.25,3.04,2.83,2.62],[3.67,3.46,3.25,3.04,2.83,2.62]],
+  },
+  // Santa Fe
+  santafe: {
+    d: [[3.32,2.85,2.34,1.93,1.52,1.22],[3.05,2.65,2.13,1.73,1.32,1.01],[3.05,2.65,2.13,1.73,1.32,1.01],[3.05,2.65,2.13,1.73,1.32,1.01]],
+    c: [[6.42,5.91,5.71,5.40,4.99,4.59],[6.42,5.91,5.71,5.40,4.99,4.59],[5.51,5.10,4.99,4.89,4.59,4.28],[4.48,4.28,4.18,4.08,3.56,3.05]],
+    p: [[3.83,3.63,3.42,3.22,3.01,2.81],[3.83,3.63,3.42,3.22,3.01,2.81],[3.57,3.37,3.17,2.96,2.76,2.55],[3.57,3.37,3.17,2.96,2.76,2.55]],
+  },
+  // Río Negro
+  rionegro: {
+    d: [[3.30,2.83,2.33,1.92,1.51,1.21],[3.04,2.63,2.12,1.72,1.31,1.01],[3.04,2.63,2.12,1.72,1.31,1.01],[3.04,2.63,2.12,1.72,1.31,1.01]],
+    c: [[6.39,5.88,5.68,5.37,4.97,4.56],[6.39,5.88,5.68,5.37,4.97,4.56],[5.48,5.07,4.97,4.87,4.56,4.26],[4.46,4.26,4.16,4.05,3.55,3.04]],
+    p: [[3.81,3.61,3.40,3.20,3.00,2.79],[3.81,3.61,3.40,3.20,3.00,2.79],[3.56,3.35,3.15,2.95,2.74,2.54],[3.56,3.35,3.15,2.95,2.74,2.54]],
+  },
+  // Chaco, San Juan, Santa Cruz, Santiago del Estero
+  chaco: {
+    d: [[3.20,2.75,2.25,1.86,1.47,1.17],[2.94,2.55,2.06,1.66,1.27,0.97],[2.94,2.55,2.06,1.66,1.27,0.97],[2.94,2.55,2.06,1.66,1.27,0.97]],
+    c: [[6.19,5.70,5.50,5.21,4.81,4.42],[6.19,5.70,5.50,5.21,4.81,4.42],[5.31,4.91,4.81,4.72,4.42,4.13],[4.32,4.13,4.03,3.93,3.44,2.94]],
+    p: [[3.69,3.49,3.30,3.10,2.90,2.71],[3.69,3.49,3.30,3.10,2.90,2.71],[3.45,3.25,3.05,2.86,2.66,2.46],[3.45,3.25,3.05,2.86,2.66,2.46]],
+  },
+  // Catamarca, Formosa, Mendoza
+  catamarca: {
+    d: [[3.34,2.87,2.35,1.94,1.53,1.22],[3.07,2.66,2.15,1.74,1.32,1.02],[3.07,2.66,2.15,1.74,1.32,1.02],[3.07,2.66,2.15,1.74,1.32,1.02]],
+    c: [[6.46,5.95,5.74,5.43,5.02,4.61],[6.46,5.95,5.74,5.43,5.02,4.61],[5.53,5.12,5.02,4.92,4.61,4.30],[4.51,4.30,4.20,4.10,3.58,3.07]],
+    p: [[3.85,3.65,3.44,3.23,3.03,2.82],[3.85,3.65,3.44,3.23,3.03,2.82],[3.59,3.39,3.18,2.98,2.77,2.57],[3.59,3.39,3.18,2.98,2.77,2.57]],
+  },
+  // La Rioja
+  larioja: {
+    d: [[3.36,2.88,2.36,1.95,1.54,1.23],[3.09,2.67,2.16,1.74,1.33,1.02],[3.09,2.67,2.16,1.74,1.33,1.02],[3.09,2.67,2.16,1.74,1.33,1.02]],
+    c: [[6.49,5.98,5.77,5.46,5.05,4.64],[6.49,5.98,5.77,5.46,5.05,4.64],[5.56,5.15,5.05,4.95,4.64,4.33],[4.53,4.33,4.22,4.12,3.60,3.09]],
+    p: [[3.87,3.67,3.46,3.25,3.05,2.84],[3.87,3.67,3.46,3.25,3.05,2.84],[3.61,3.41,3.20,2.99,2.79,2.58],[3.61,3.41,3.20,2.99,2.79,2.58]],
+  },
+};
+const PROV_GRUPO = {
+  caba:'resto',neuquen:'resto',jujuy:'resto',corrientes:'resto',tierradelfuego:'resto',
+  sanluis:'resto',lapampa:'resto',salta:'resto',misiones:'resto',tucuman:'resto',
+  bsas:'bsas',cordoba:'bsas',chubut:'bsas',entrerios:'bsas',
+  santafe:'santafe',rionegro:'rionegro',
+  chaco:'chaco',sanjuan:'chaco',santacruz:'chaco',santiago:'chaco',
+  catamarca:'catamarca',formosa:'catamarca',mendoza:'catamarca',
+  larioja:'larioja',
+};
+const PROV_NOMBRE = {
+  resto:'Resto del país',bsas:'Bs.As./Chubut/Cba/ER',
+  santafe:'Santa Fe',rionegro:'Río Negro',
+  chaco:'Chaco/SJ/SC/SgoE',catamarca:'Cat/Fsa/Mza',larioja:'La Rioja'
+};
+const LIB_LABELS = ['Al momento','2 días corridos','5 días corridos','10 días corridos'];
+const LIB_LABELS_C = {inmediata:'Inmediata','1dia_h':'1 día hábil','2dias_h':'2 días hábiles','10dias_h':'10 días hábiles'};
+
+// TASAS FINANCIACIÓN MP
+const FIN_MP = {
+  lt: [9.49,12.19,19.09,27.29,32.29,41.59],
+  r1: [8.70,11.30,17.90,25.00,29.80,37.20],
+  r2: [7.20, 9.50,15.10,21.10,25.40,32.90],
+  r3: [5.70, 7.70,12.10,17.20,21.20,28.70],
+  r4: [5.40, 7.20,11.40,16.40,19.90,26.90],
+  r5: [4.40, 6.20,10.30,15.30,19.50,26.10],
+  r5p:[3.50, 4.90,10.30,15.30,19.50,26.10],
+};
+const CUOTA_LABELS = ['2x','3x','6x','9x','12x','18x'];
+const ROUND_LABELS = {lt:'LT',r1:'R1',r2:'R2',r3:'R3',r4:'R4',r5:'R5',r5p:'R5+'};
+
+// PROCESAMIENTO COMPETIDORES
+const COMP_PROC = {
+  fiserv:          {pd:{'1dia_h':0.80},          pc:{'1dia_h':1.80,'2dias_h':1.80}},
+  payway_cf:       {pd:{'1dia_h':1.20},           pc:{'1dia_h':2.00,'2dias_h':2.00}},
+  payway_mp:       {pd:{'1dia_h':1.20},           pc:{'1dia_h':2.00,'2dias_h':2.00}},
+  getnet:          {pd:{'1dia_h':1.00},           pc:{'inmediata':3.06,'1dia_h':2.53,'2dias_h':2.00}},
+  uala:            {pd:{'inmediata':2.90},         pc:{'inmediata':4.90}},
+  nave:            {pd:{'1dia_h':0.80},           pc:{'1dia_h':1.98,'2dias_h':1.80}},
+  naranjax:        {pd:{'1dia_h':1.20},           pc:{'1dia_h':2.00}},
+  banco_bbva:      {pd:{'1dia_h':1.20},           pc:{'1dia_h':2.00,'2dias_h':2.00}},
+  banco_galicia:   {pd:{'1dia_h':1.20},           pc:{'1dia_h':2.00,'2dias_h':2.00}},
+  banco_santander: {pd:{'1dia_h':1.20},           pc:{'1dia_h':2.00,'2dias_h':2.00}},
+};
+
+const DEFAULT_COMPS = [
+  {id:'payway_cf',   nombre:'Payway (Cuotas Fijas)', fecha:'2026-04-06',
+   fin:[11.08,14.47,23.61,32.54,39.36,50.20], pd:1.20, pc:2.00,
+   extras:[{l:'Alquiler/mant. dispositivo',m:42000,on:true},{l:'Exige cuenta corriente bancaria',m:0,on:true}],
+   notas:'Bonificado primeros 12 meses, luego $42.000/mes. Requiere CC bancaria.'},
+  {id:'payway_mp',   nombre:'Payway (MiPyME)', fecha:'2026-04-06',
+   fin:[null,6.91,13.02,null,null,null], pd:1.20, pc:2.00,
+   extras:[{l:'Alquiler/mant. dispositivo',m:42000,on:true},{l:'Exige cuenta corriente bancaria',m:0,on:true}],
+   notas:'Solo 3x y 6x disponibles. Requiere CC bancaria.'},
+  {id:'fiserv',      nombre:'Fiserv (General)', fecha:'2026-04-06',
+   fin:[7.75,10.52,19.07,26.68,32.97,null], pd:0.80, pc:1.80,
+   extras:[{l:'Mantenimiento Clover Flex',m:46400,on:true},{l:'Exige cuenta corriente bancaria',m:0,on:true},{l:'Fee de riesgo 0,9-1,4% sobre cuotas',m:0,on:false}],
+   notas:'Clover Flex con soporte remoto. Requiere CC bancaria. POSNet en discontinuación.'},
+  {id:'getnet',      nombre:'Getnet (General)', fecha:'2026-04-06',
+   fin:[8.44,11.15,18.65,26.55,32.63,42.75], pd:1.00, pc:2.00,
+   extras:[{l:'Mantenimiento dispositivo',m:37000,on:true},{l:'Exige cuenta corriente bancaria',m:0,on:true}],
+   notas:'QR tarda hasta 15 días hábiles. Requiere CC bancaria.'},
+  {id:'uala',        nombre:'Ualá (General)', fecha:'2026-04-06',
+   fin:[7.40,12.00,18.90,25.70,32.00,null], pd:2.90, pc:4.90,
+   extras:[{l:'Dispositivo POS Pro (pago único)',m:49900,on:true}],
+   notas:'QR solo como transferencia, no se puede setear monto desde el POS.'},
+  {id:'nave',        nombre:'Nave (General)', fecha:'2026-04-06',
+   fin:[null,10.95,18.31,26.07,32.04,null], pd:0.80, pc:1.98,
+   extras:[{l:'Descuento 30% solo primeros 3 meses',m:0,on:false}],
+   notas:'Sin costo mensual fijo. Sin catálogo ni link de pago desde POS.'},
+  {id:'naranjax',    nombre:'Naranja X (General)', fecha:'2026-04-06',
+   fin:[null,8.92,15.28,20.45,25.46,null], pd:1.20, pc:2.00,
+   extras:[],
+   notas:'Tasas competitivas en 9x y 12x.'},
+  {id:'banco_bbva',  nombre:'Banco BBVA', fecha:'2026-04-06',
+   fin:[9.49,12.19,19.09,27.29,32.29,41.59], pd:1.20, pc:2.00,
+   extras:[{l:'Terminal via Payway ($42.000/mes)',m:42000,on:true},{l:'Transferencias bancarias/mes',m:25000,on:true},{l:'Mantenimiento Cta. Cte./mes',m:71390,on:true},{l:'Impuesto D/C (0,6%) por CC bancaria',m:0,on:true}],
+   notas:'Crédito CF 44-48%. Requiere 1-2 años antigüedad y balance certificado. Aprobación 15-30 días.'},
+  {id:'banco_galicia',nombre:'Banco Galicia', fecha:'2026-04-06',
+   fin:[9.49,12.19,19.09,27.29,32.29,41.59], pd:1.20, pc:2.00,
+   extras:[{l:'Transferencias bancarias/mes',m:28000,on:true},{l:'Mantenimiento Cta. Cte./mes',m:53900,on:true},{l:'Impuesto D/C (0,6%) por CC bancaria',m:0,on:true}],
+   notas:'CF 36-40,5% + TAMAR + 7%. Requiere 1-2 años antigüedad.'},
+  {id:'banco_santander',nombre:'Banco Santander', fecha:'2026-04-06',
+   fin:[9.49,12.19,19.09,27.29,32.29,41.59], pd:1.20, pc:2.00,
+   extras:[{l:'Transferencias bancarias/mes',m:24000,on:true},{l:'Mant. Cta. Cte. (bonif. 6m)',m:57500,on:true},{l:'Impuesto D/C (0,6%) por CC bancaria',m:0,on:true}],
+   notas:'CF 39-43% + TAMAR + 9%. Bonificación mantenimiento primeros 6 meses.'},
+];
+
+// ════════════════════════════════════
+// STORAGE
+// ════════════════════════════════════
+const SK = 'mp_bc_v4';
+let comps = [];
+let editId = null;
+let lastCalc = null;
+
+function loadComps(){
+  try{ const r=localStorage.getItem(SK); comps=r?JSON.parse(r):JSON.parse(JSON.stringify(DEFAULT_COMPS)); }
+  catch(e){ comps=JSON.parse(JSON.stringify(DEFAULT_COMPS)); }
+}
+function saveComps(){ try{localStorage.setItem(SK,JSON.stringify(comps));}catch(e){} }
+
+// ════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════
+function fmt(n){ return new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(Math.round(n)); }
+function pct(n){ return n!=null ? n.toFixed(2).replace('.',',')+'%' : '—'; }
+function coef(t){ return t!=null ? 'x'+(1+t/100).toFixed(4) : '—'; }
+function stale(d){
+  if(!d) return 'old';
+  const days=(new Date()-new Date(d))/86400000;
+  return days<30?'fresh':days<60?'warn':'old';
+}
+function staleLabel(d){
+  if(!d) return 'Sin fecha';
+  const days=Math.floor((new Date()-new Date(d))/86400000);
+  if(days<1) return 'Hoy'; if(days===1) return 'Ayer';
+  if(days<30) return `Hace ${days} días`;
+  return `Hace ${Math.floor(days/30)} mes${Math.floor(days/30)>1?'es':''}`;
+}
+function staleClass(d){ return {fresh:'bg',warn:'ba',old:'br'}[stale(d)]||'br'; }
+function getGrupo(prov){ return PROV_GRUPO[prov]||'resto'; }
+function getProcMP(prov,cat,lib,esC){
+  const g=PROV_PROC[getGrupo(prov)];
+  const med=esC?'c':'d';
+  return g[med][lib][cat];
+}
+function getCompProc(id,libKey,esC){
+  const t=COMP_PROC[id]; if(!t) return null;
+  const opts=esC?t.pc:t.pd; if(!opts) return null;
+  if(opts[libKey]!=null) return opts[libKey];
+  return Math.min(...Object.values(opts).filter(v=>v!=null));
+}
+// Rendimiento interés compuesto con aportes diarios
+// fact = facturación mensual, tna = tasa anual DECIMAL (ej: 0.198)
+function calcRend(fact, tna) {
+  const td = tna / 365;
+  const ap = fact / 30;
+  // 30 días con tabla
+  let s30 = 0, tot30 = 0;
+  const tabla = [];
+  for (let d = 1; d <= 30; d++) {
+    const i = s30 * td;
+    tot30 += i;
+    s30 += i + ap;
+    tabla.push({ d, i, sf: s30 });
+  }
+  // 365 días sin tabla
+  let s365 = 0, tot365 = 0;
+  for (let d = 0; d < 365; d++) {
+    const i = s365 * td;
+    tot365 += i;
+    s365 += i + ap;
+  }
+  return { mes: tot30, anual: tot365, s30, td, ap, tabla };
+}
+
+// ════════════════════════════════════
+// TABS
+// ════════════════════════════════════
+function setTab(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  const idx={sim:0,maestro:1,propuesta:2}[id];
+  document.querySelectorAll('.tb')[idx].classList.add('on');
+  if(id==='maestro') renderMaestro();
+}
+
+// ════════════════════════════════════
+// PROVINCIA / TASAS PREVIEW
+// ════════════════════════════════════
+function onProvChange(){
+  const prov=document.getElementById('s-prov').value;
+  const cat=parseInt(document.getElementById('s-cat').value);
+  const lib=parseInt(document.getElementById('s-lib').value);
+  const g=PROV_PROC[getGrupo(prov)];
+  const rows=['Cat 1 · LT','Cat 2','Cat 3','Cat 4','Cat 5','Cat 6'].map((lbl,i)=>{
+    const sel=i===cat;
+    const d=g.d[lib][i], c=g.c[lib][i], p=g.p[lib][i];
+    return `<tr class="${sel?'sel':''}">
+      <td>${lbl}${sel?' ◀':''}</td>
+      <td>${pct(d)}</td><td>${pct(c)}</td><td>${pct(p)}</td>
+    </tr>`;
+  }).join('');
+  const grupNombre=PROV_NOMBRE[getGrupo(prov)]||'';
+  const libLabel=LIB_LABELS[lib];
+  document.getElementById('prov-tbl').innerHTML=`
+    <thead><tr>
+      <th style="text-align:left">Cat. · ${grupNombre} · ${libLabel}</th>
+      <th>Débito</th><th>Crédito</th><th>Prepaga</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+
+// ════════════════════════════════════
+// COMPETIDOR
+// ════════════════════════════════════
+function populateComp(){
+  const sel=document.getElementById('s-comp');
+  const cur=sel.value;
+  sel.innerHTML=comps.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  if(cur&&comps.find(c=>c.id===cur)) sel.value=cur;
+  onCompChange();
+}
+function onCompChange(){
+  const id=document.getElementById('s-comp').value;
+  const c=comps.find(x=>x.id===id);
+  const el=document.getElementById('extras-check');
+  if(!c||!c.extras||!c.extras.length){ el.innerHTML='<div style="font-size:11px;color:var(--tx3)">Sin costos extras registrados</div>'; return; }
+  el.innerHTML=c.extras.map((e,i)=>`
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);padding:4px 0;border-bottom:1px dashed var(--bd);cursor:pointer">
+      <input type="checkbox" id="ec-${i}" ${e.on?'checked':''} style="accent-color:var(--bl);width:13px;height:13px"/>
+      <span style="flex:1">${e.l}</span>
+      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--r)">${e.m>0?'$'+fmt(e.m)+'/mes':'Req.'}</span>
+    </label>`).join('');
+}
+
+// ════════════════════════════════════
+// CALCULAR
+// ════════════════════════════════════
+function calcular(){
+  const prov=document.getElementById('s-prov').value;
+  const cat=parseInt(document.getElementById('s-cat').value);
+  const lib=parseInt(document.getElementById('s-lib').value);
+  const round=document.getElementById('s-round').value;
+  const cuotaIdx=parseInt(document.getElementById('s-cuota').value);
+  const fact=parseFloat(document.getElementById('s-fact').value)||0;
+  const pctC=parseFloat(document.getElementById('s-pctc').value)||0;
+  const pctD=parseFloat(document.getElementById('s-pctd').value)||0;
+  const compId=document.getElementById('s-comp').value;
+  const libCKey=document.getElementById('s-libc').value;
+  const tna=parseFloat(document.getElementById('s-tna').value)||19.80;
+  const comp=comps.find(c=>c.id===compId);
+  if(!comp) return;
+
+  // Extras seleccionados
+  const extSel=[];
+  (comp.extras||[]).forEach((e,i)=>{ const cb=document.getElementById('ec-'+i); if(cb&&cb.checked&&e.m>0) extSel.push(e); });
+  const extTotal=extSel.reduce((s,e)=>s+e.m,0);
+
+  // Tasas
+  const mpProcD=getProcMP(prov,cat,lib,false);
+  const mpProcC=getProcMP(prov,cat,lib,true);
+  const compProcD=getCompProc(compId,libCKey,false)??comp.pd??1.20;
+  const compProcC=getCompProc(compId,libCKey,true)??comp.pc??2.00;
+  const mpFin=FIN_MP[round]?.[cuotaIdx]??null;
+  const compFin=comp.fin?.[cuotaIdx]??null;
+
+  // Montos
+  const fC=fact*(pctC/100), fD=fact*(pctD/100);
+  const mpProcAmt=fC*(mpProcC/100)+fD*(mpProcD/100);
+  const compProcAmt=fC*(compProcC/100)+fD*(compProcD/100);
+  const mpFinAmt=mpFin!=null?fC*(mpFin/100):0;
+  const compFinAmt=compFin!=null?fC*(compFin/100):0;
+  const mpBruto=mpProcAmt+mpFinAmt;
+  const compBruto=compProcAmt+compFinAmt+extTotal;
+  const ahorro=compBruto-mpBruto;
+
+  // Rendimiento interés compuesto
+  const rend=calcRend(fact,tna/100);
+  const mpNeto=mpBruto-rend.mes;
+  const compNeto=compBruto;
+  const beneficioMes=compNeto-mpNeto;
+  const beneficioAnual=beneficioMes*12;
+
+  lastCalc={prov,cat,lib,round,cuotaIdx,fact,pctC,pctD,compId,libCKey,tna,comp,extSel,extTotal,
+    mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fD,
+    mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
+    ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual};
+
+  renderResult();
+}
+
+function renderResult(){
+  const {prov,cat,lib,round,cuotaIdx,fact,pctC,pctD,comp,extSel,extTotal,
+    mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fD,
+    mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
+    ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual}=lastCalc;
+
+  const RL=ROUND_LABELS[round];
+  const cLbl=CUOTA_LABELS[cuotaIdx];
+  const wM=(mpBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
+  const wC=(compBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
+
+  const warn=stale(comp.fecha)!=='fresh'?`<div style="background:var(--amb);border:1px solid var(--ambo);border-radius:var(--rads);padding:7px 11px;font-size:11px;color:var(--am);margin-bottom:12px">⚠ Tasas de ${comp.nombre} actualizadas ${staleLabel(comp.fecha)}. Verificar antes de usar.</div>`:'';
+
+  // Tabla desglose
+  const extRows=extSel.map(e=>`
+    <tr class="ext-row">
+      <td>⚠ ${e.l}</td>
+      <td style="color:var(--g)">$0</td><td style="color:var(--r)">$${fmt(e.m)}/mes</td><td></td><td></td>
+    </tr>`).join('');
+
+  const totExtRows=extSel.length?`<tr style="background:var(--rb)">
+    <td style="font-weight:700;color:var(--r)">Total extras</td>
+    <td style="color:var(--g);font-weight:700">$0</td>
+    <td style="color:var(--r);font-weight:700">$${fmt(extTotal)}</td><td></td><td></td>
+  </tr>`:'';
+
+  // Tabla cuotas todas
+  const cuotaRows=CUOTA_LABELS.map((cl,i)=>{
+    const mf=FIN_MP[round]?.[i], cf=comp.fin?.[i];
+    if(mf==null&&cf==null) return '';
+    const sel=i===cuotaIdx;
+    const d=mf!=null&&cf!=null?cf-mf:null;
+    return `<tr class="${sel?'hl':''}">
+      <td>${cl}${sel?' ◀':''}</td>
+      <td class="vg">${pct(mf)}</td>
+      <td class="vr">${pct(cf)}</td>
+      <td class="${d!=null&&d>0?'vd':'vn'}">${d!=null?'−'+d.toFixed(2).replace('.',',')+'pp':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const coefRows=CUOTA_LABELS.map((cl,i)=>{
+    const t=FIN_MP[round]?.[i]; if(t==null) return '';
+    const sel=i===cuotaIdx;
+    return `<tr class="${sel?'hl':''}">
+      <td>${cl}${sel?' ◀':''}</td>
+      <td class="vg">${pct(t)}</td>
+      <td class="vg" style="font-weight:800">${coef(t)}</td>
+      <td class="vg">$${fmt(100000*(1+t/100))}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('result-area').innerHTML=`
+
+  <!-- Header resultado -->
+  <div class="card" style="margin-bottom:12px">
+  <div class="card-bd">
+    ${warn}
+    <div class="res-head">
+      <div>
+        <div class="res-title">MP ${RL} vs ${comp.nombre}</div>
+        <div class="res-sub">${PROV_NOMBRE[getGrupo(prov)]} · Cat ${cat+1} · ${LIB_LABELS[lib]} · ${pctC}% en ${cLbl} · $${fmt(fact)}/mes</div>
+      </div>
+      <div class="big-save">
+        <div class="lbl">Beneficio mensual</div>
+        <div class="val">$${fmt(beneficioMes)}</div>
+        <div class="sub">$${fmt(beneficioAnual)}/año</div>
+      </div>
+    </div>
+
+    <!-- Barras -->
+    <div class="bar-row"><div class="bar-lbl">MP ${RL}</div><div class="bar-trk"><div class="bar-fill mp" style="width:${wM}%">$${fmt(mpBruto)}/mes</div></div></div>
+    <div class="bar-row"><div class="bar-lbl">${comp.nombre.split(' ')[0]}</div><div class="bar-trk"><div class="bar-fill comp" style="width:${wC}%">$${fmt(compBruto)}/mes</div></div></div>
+    ${extTotal>0?`<div style="font-size:11px;color:var(--r);margin-top:4px">Incluye $${fmt(extTotal)}/mes en costos fijos ${comp.nombre.split(' ')[0]}</div>`:''}
+  </div>
+  </div>
+
+  <!-- Desglose línea a línea -->
+  <div class="card" style="margin-bottom:12px">
+  <div class="card-bd">
+    <div class="sec-lbl" style="margin-bottom:10px">Desglose completo · sobre $${fmt(fact)}/mes</div>
+    <div style="overflow-x:auto">
+    <table class="desg-tbl" style="min-width:480px">
+      <thead><tr>
+        <th style="text-align:left;width:38%">Concepto</th>
+        <th>MP ${RL}</th><th>%</th>
+        <th>${comp.nombre.split(' ')[0]}</th><th>%</th>
+      </tr></thead>
+      <tbody>
+        <tr class="sec-row"><td colspan="5">Procesamiento</td></tr>
+        <tr>
+          <td>Cuotas/crédito (${pctC}%)</td>
+          <td class="vg">$${fmt(fC*(mpProcC/100))}</td><td class="vn">${pct(mpProcC)}</td>
+          <td class="vr">$${fmt(fC*(compProcC/100))}</td><td class="vn">${pct(compProcC)}</td>
+        </tr>
+        <tr>
+          <td>Débito/1 pago (${pctD}%)</td>
+          <td class="vg">$${fmt(fD*(mpProcD/100))}</td><td class="vn">${pct(mpProcD)}</td>
+          <td class="vr">$${fmt(fD*(compProcD/100))}</td><td class="vn">${pct(compProcD)}</td>
+        </tr>
+        <tr class="sec-row"><td colspan="5">Financiación · ${cLbl}</td></tr>
+        <tr>
+          <td>Financing sobre ${pctC}% de ventas</td>
+          <td class="vg">$${fmt(mpFinAmt)}</td><td class="vn">${pct(mpFin)}</td>
+          <td class="vr">$${fmt(compFinAmt)}</td><td class="vn">${pct(compFin)}</td>
+        </tr>
+        <tr><td style="font-weight:700">Subtotal tasas</td>
+          <td class="vg" style="font-weight:700">$${fmt(mpBruto)}</td>
+          <td class="vn">${pct(mpBruto/fact*100)}</td>
+          <td class="vr" style="font-weight:700">$${fmt(compBruto-extTotal)}</td>
+          <td class="vn">${pct((compBruto-extTotal)/fact*100)}</td>
+        </tr>
+        ${extRows}${totExtRows}
+        <tr class="sec-row"><td colspan="5">Rendimiento del saldo (TNA ${lastCalc.tna}% · interés compuesto)</td></tr>
+        <tr class="rend-row">
+          <td>Intereses generados en 30 días</td>
+          <td>−$${fmt(rend.mes)}</td><td></td>
+          <td>$0</td><td></td>
+        </tr>
+        <tr class="tot-row">
+          <td>COSTO NETO TOTAL / MES</td>
+          <td style="color:${beneficioMes>0?'#4ADE80':'#fff'}">$${fmt(mpNeto)}</td>
+          <td style="font-size:11px;opacity:.6">${pct(mpNeto/fact*100)}</td>
+          <td style="color:${beneficioMes>0?'#F87171':'#fff'}">$${fmt(compNeto)}</td>
+          <td style="font-size:11px;opacity:.6">${pct(compNeto/fact*100)}</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  </div>
+
+  <!-- Ecuación resumen -->
+  <div class="card" style="margin-bottom:12px">
+  <div class="card-bd">
+    <div class="sec-lbl" style="margin-bottom:10px">Ecuación del costo neto real</div>
+    <div class="eq-grid">
+      <div class="eq-box mp">
+        <div class="eq-lbl">✅ Mercado Pago ${RL} · Cat ${cat+1}</div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Proc. cuotas (${pct(mpProcC)})</span><span>$${fmt(fC*(mpProcC/100))}</span></div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Proc. débito (${pct(mpProcD)})</span><span>$${fmt(fD*(mpProcD/100))}</span></div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Financing ${cLbl} (${pct(mpFin)})</span><span>$${fmt(mpFinAmt)}</span></div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Costos extras</span><span>$0</span></div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Subtotal</span><span>$${fmt(mpBruto)}</span></div>
+        <div class="eq-row" style="color:var(--g)"><span>↩ Rendimiento saldo</span><span>−$${fmt(rend.mes)}</span></div>
+        <div class="eq-row" style="color:var(--g)"><span>COSTO NETO</span><span>$${fmt(mpNeto)}</span></div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:4px">${pct(mpNeto/fact*100)} de tu facturación</div>
+      </div>
+      <div class="eq-box comp">
+        <div class="eq-lbl">❌ ${comp.nombre}</div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Proc. cuotas (${pct(compProcC)})</span><span>$${fmt(fC*(compProcC/100))}</span></div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Proc. débito (${pct(compProcD)})</span><span>$${fmt(fD*(compProcD/100))}</span></div>
+        <div class="eq-row" style="color:var(--tx2)"><span>Financing ${cLbl} (${pct(compFin)})</span><span>$${fmt(compFinAmt)}</span></div>
+        ${extSel.map(e=>`<div class="eq-row" style="color:var(--r)"><span>⚠ ${e.l}</span><span>$${fmt(e.m)}</span></div>`).join('')}
+        <div class="eq-row" style="color:var(--tx2)"><span>Subtotal</span><span>$${fmt(compBruto)}</span></div>
+        <div class="eq-row" style="color:var(--tx3)"><span>Rendimiento saldo</span><span>$0</span></div>
+        <div class="eq-row" style="color:var(--r)"><span>COSTO NETO</span><span>$${fmt(compNeto)}</span></div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:4px">${pct(compNeto/fact*100)} de tu facturación</div>
+      </div>
+    </div>
+    <!-- Caja beneficio total -->
+    <div style="background:var(--dk);border-radius:var(--rads);padding:14px 16px;margin-top:12px">
+      <div class="bene-row">
+        <div class="bene-item"><div class="bl">Ahorro tasas/mes</div><div class="bv">$${fmt(ahorro)}</div></div>
+        <div class="bene-item"><div class="bl">Rendimiento/mes</div><div class="bv">$${fmt(rend.mes)}</div></div>
+        ${extTotal>0?`<div class="bene-item"><div class="bl">Extras evitados/mes</div><div class="bv">$${fmt(extTotal)}</div></div>`:''}
+        <div class="bene-item hi"><div class="bl">Beneficio total/mes</div><div class="bv">$${fmt(beneficioMes)}</div></div>
+        <div class="bene-item hi"><div class="bl">Beneficio total/año</div><div class="bv">$${fmt(beneficioAnual)}</div></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Detalles colapsables -->
+  <div class="card" style="margin-bottom:12px">
+  <div class="card-bd" style="padding:0 18px">
+    <div class="collapse-hd" onclick="toggle(this)">
+      <span class="c-title">💳 Comparativa de financiación por cuota</span><span class="c-arr">▼</span>
+    </div>
+    <div class="collapse-body">
+      <table class="dt"><thead><tr><th>Cuotas</th><th>MP ${RL}</th><th>${comp.nombre.split(' ')[0]}</th><th>Ahorro</th></tr></thead>
+      <tbody>${cuotaRows}</tbody></table>
+    </div>
+    <div class="collapse-hd" onclick="toggle(this)">
+      <span class="c-title">🧮 Coeficientes MP ${RL} para trasladar al comprador</span><span class="c-arr">▼</span>
+    </div>
+    <div class="collapse-body">
+      <table class="dt"><thead><tr><th>Cuotas</th><th>Tasa</th><th>Coeficiente</th><th>Precio final s/$100.000</th></tr></thead>
+      <tbody>${coefRows}</tbody></table>
+    </div>
+    <div class="collapse-hd" onclick="toggle(this)">
+      <span class="c-title">📈 Rendimiento día a día (interés compuesto)</span><span class="c-arr">▼</span>
+    </div>
+    <div class="collapse-body">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Aporte diario $${fmt(rend.ap)} · TNA ${lastCalc.tna}% · Tasa diaria ${(rend.td*100).toFixed(5).replace('.',',')}%</div>
+      <div style="max-height:240px;overflow-y:auto;border:1px solid var(--bd);border-radius:var(--rads)">
+        <table class="dt" style="font-size:11px">
+          <thead style="position:sticky;top:0;background:#fafafa"><tr><th>Día</th><th>Interés</th><th>Saldo final</th></tr></thead>
+          <tbody>${rend.tabla.map(r=>`<tr><td style="color:var(--bl);font-weight:600">${r.d}</td><td class="vg">+$${fmt(r.i)}</td><td class="vg" style="font-weight:700">$${fmt(r.sf)}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <button class="btn btn-green btn-block" onclick="setTab('propuesta')">Ir a Propuesta Final →</button>
+  `;
+}
+
+function toggle(hd){
+  hd.classList.toggle('open');
+  const body=hd.nextElementSibling;
+  body.style.display=body.style.display==='block'?'none':'block';
+}
+
+// ════════════════════════════════════
+// MAESTRO
+// ════════════════════════════════════
+function renderMaestro(){
+  document.getElementById('mc-grid').innerHTML=comps.map(c=>{
+    const sc=stale(c.fecha);
+    const cuotaKeys=CUOTA_LABELS.filter((_,i)=>c.fin?.[i]!=null).slice(0,6);
+    const ratesHtml=cuotaKeys.map((_,i)=>{
+      const idx=CUOTA_LABELS.indexOf(_);
+      return `<div class="rmi"><div class="rl">${_}</div><div class="rv">${pct(c.fin[idx])}</div></div>`;
+    }).join('');
+    const extHtml=(c.extras||[]).length
+      ?(c.extras||[]).map(e=>`<div class="er"><span>${e.l}</span><span class="ev">${e.m>0?'$'+fmt(e.m)+'/mes':'Req.'}</span></div>`).join('')
+      :'<div style="font-size:11px;color:var(--tx3)">Sin costos extras</div>';
+    return `<div class="mc">
+      <div class="mc-hd">
+        <div>
+          <div class="mc-name">${c.nombre}</div>
+          <div class="mc-meta">
+            <span class="badge ${staleClass(c.fecha)}">${staleLabel(c.fecha)}</span>
+            <span class="badge bb">pd: ${c.pd??'?'}% · pc: ${c.pc??'?'}%</span>
+          </div>
+        </div>
+        <div class="mc-acts">
+          <button class="ic" onclick="openModal('${c.id}')" title="Editar">✏️</button>
+          <button class="ic del" onclick="deleteComp('${c.id}')" title="Eliminar">✕</button>
+        </div>
+      </div>
+      <div class="mc-bd">
+        <div class="sec-lbl" style="margin-bottom:7px">Financiación</div>
+        <div class="rates-mini">${ratesHtml}</div>
+        ${c.notas?`<div style="font-size:11px;color:var(--tx3);font-style:italic;line-height:1.4;margin-bottom:6px">${c.notas.substring(0,120)}${c.notas.length>120?'…':''}</div>`:''}
+        <div class="sec-lbl" style="margin-bottom:5px">Costos extras</div>
+        <div class="ext-prev">${extHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openModal(id){
+  editId=id||null;
+  const c=id?comps.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=id?'Editar competidor':'Nuevo competidor';
+  document.getElementById('m-name').value=c?c.nombre:'';
+  document.getElementById('m-fecha').value=c?(c.fecha||''):new Date().toISOString().split('T')[0];
+  ['t2','t3','t6','t9','t12','t18'].forEach((k,i)=>{
+    document.getElementById('m-'+k).value=c&&c.fin?.[i]!=null?c.fin[i]:'';
+  });
+  document.getElementById('m-pd').value=c?c.pd??'':'';
+  document.getElementById('m-pc').value=c?c.pc??'':'';
+  document.getElementById('m-notas').value=c?c.notas??'':'';
+  const ed=document.getElementById('modal-ee');
+  ed.innerHTML='<button class="ee-add" onclick="addEE()">+ Agregar costo / requisito</button>';
+  (c?.extras||[]).forEach(e=>addEE(e.l,e.m,e.on));
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal-bg').classList.remove('open'); editId=null; }
+function addEE(l='',m='',on=true){
+  const ed=document.getElementById('modal-ee');
+  const btn=ed.querySelector('.ee-add');
+  const row=document.createElement('div'); row.className='ee-row';
+  row.innerHTML=`<input type="text" placeholder="Descripción" value="${l}" style="flex:1"/>
+    <input type="number" placeholder="$0" value="${m}" min="0"/>
+    <button class="ee-del" onclick="this.parentElement.remove()">×</button>`;
+  ed.insertBefore(row,btn);
+}
+function saveComp(){
+  const nombre=document.getElementById('m-name').value.trim();
+  if(!nombre){alert('Ingresá el nombre.');return;}
+  const fin=['t2','t3','t6','t9','t12','t18'].map(k=>{ const v=parseFloat(document.getElementById('m-'+k).value); return isNaN(v)?null:v; });
+  const extras=[];
+  document.querySelectorAll('#modal-ee .ee-row').forEach(row=>{
+    const ins=row.querySelectorAll('input');
+    const l=ins[0].value.trim(), m=parseFloat(ins[1].value)||0;
+    if(l) extras.push({l,m,on:true});
+  });
+  const comp={
+    id:editId||'c_'+Date.now(),nombre,
+    fecha:document.getElementById('m-fecha').value,
+    fin,
+    pd:parseFloat(document.getElementById('m-pd').value)||null,
+    pc:parseFloat(document.getElementById('m-pc').value)||null,
+    extras,notas:document.getElementById('m-notas').value.trim()
+  };
+  if(editId){const i=comps.findIndex(c=>c.id===editId);if(i>=0)comps[i]=comp;}
+  else comps.push(comp);
+  saveComps(); closeModal(); renderMaestro(); populateComp();
+}
+function deleteComp(id){
+  if(!confirm('¿Eliminar?'))return;
+  comps=comps.filter(c=>c.id!==id); saveComps(); renderMaestro(); populateComp();
+}
+
+// ════════════════════════════════════
+// PROPUESTA
+// ════════════════════════════════════
+function genPropuesta(){
+  if(!lastCalc){alert('Primero calculá en el simulador.');return;}
+  const nombre=document.getElementById('p-nombre').value.trim();
+  if(!nombre){alert('Ingresá el nombre del comercio.');return;}
+  const {prov,cat,round,cuotaIdx,fact,pctC,pctD,comp,extSel,extTotal,
+    mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fD,
+    mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
+    ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual}=lastCalc;
+
+  const cuit=document.getElementById('p-cuit').value;
+  const contacto=document.getElementById('p-contacto').value;
+  const fiscal=document.getElementById('p-fiscal').value;
+  const asesor=document.getElementById('p-asesor').value;
+  const tel=document.getElementById('p-tel').value;
+  const email=document.getElementById('p-email').value;
+  const vig=document.getElementById('p-vig').value;
+  const today=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  const RL=ROUND_LABELS[round];
+  const cLbl=CUOTA_LABELS[cuotaIdx];
+  const beneficioTotal=beneficioAnual;
+
+  const wM=(mpBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
+  const wC=(compBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
+
+  // Costos ocultos cards
+  const oCItems=extSel.filter(e=>e.m>0).map(e=>`
+    <div class="oc-item">
+      <div class="oc-lbl">Costo fijo mensual</div>
+      <div class="oc-desc">${e.l}</div>
+      <div class="oc-monto">$${fmt(e.m)}/mes</div>
+    </div>`).join('');
+  const oCSection=oCItems?`
+    <div class="p-sec">
+      <div class="p-sec-title">⚠ Costos que ${comp.nombre.split(' ')[0]} no muestra al principio</div>
+      <div class="ocultos-grid">
+        ${oCItems}
+        <div class="oc-item mp">
+          <div class="oc-lbl">Con Mercado Pago</div>
+          <div class="oc-desc">Todo sin costo mensual</div>
+          <div class="oc-monto">$0/mes</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:var(--wh);border:2px solid var(--r);border-radius:var(--rads);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <span style="font-size:13px;font-weight:700">Total costos extras ${comp.nombre.split(' ')[0]} por mes</span>
+        <span style="font-size:20px;font-weight:900;color:var(--r);font-family:'DM Mono',monospace">$${fmt(extTotal)}/mes = $${fmt(extTotal*12)}/año</span>
+      </div>
+    </div>`:'';
+
+  // Tabla cuotas propuesta
+  // Proc MP promedio ponderado (crédito sobre %cuotas + débito sobre %débito)
+  const mpProcProm = (mpProcC*(pctC/100) + mpProcD*(pctD/100));
+  const compProcProm = (compProcC*(pctC/100) + compProcD*(pctD/100));
+
+  const cuotaRowsProp=CUOTA_LABELS.map((cl,i)=>{
+    const mf=FIN_MP[round]?.[i], cf=comp.fin?.[i];
+    if(mf==null&&cf==null) return '';
+    const sel=i===cuotaIdx;
+    // Total = financing + procesamiento ponderado por mix de ventas
+    const mpTotal = mf!=null ? mf + mpProcProm : null;
+    const compTotal = cf!=null ? cf + compProcProm : null;
+    const d = mpTotal!=null&&compTotal!=null ? compTotal-mpTotal : null;
+    return `<tr style="background:${sel?'#FFFBEA':'var(--wh)'};border-bottom:1px solid var(--bd)">
+      <td style="padding:9px 12px;font-weight:${sel?800:600};color:${sel?'var(--bl)':'var(--tx2)'};border-right:1px solid var(--bd)">${cl}${sel?` <span style="background:var(--y);color:var(--dk);font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700">tu caso</span>`:''}</td>
+      <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:${sel?'var(--g)':'var(--tx2)'}">${pct(mf)}</td>
+      <td style="padding:9px 12px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:${sel?'var(--r)':'var(--tx2)'}">${pct(cf)}</td>
+      <td style="padding:9px 12px;text-align:center;border-left:2px solid var(--bd)">
+        <span style="background:var(--gb);color:var(--g);font-weight:800;padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:13px">${pct(mpTotal)}</span>
+      </td>
+      <td style="padding:9px 12px;text-align:center">
+        <span style="background:var(--rb);color:var(--r);font-weight:700;padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:13px">${pct(compTotal)}</span>
+      </td>
+      <td style="padding:9px 12px;text-align:center;font-size:12px;font-weight:800;color:${d!=null&&d>0?'var(--g)':'var(--tx3)'}">${d!=null?'−'+d.toFixed(2).replace('.',',')+'pp':'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Coeficientes propuesta
+  const coefsProp=CUOTA_LABELS.map((cl,i)=>{
+    const t=FIN_MP[round]?.[i]; if(t==null) return '';
+    return `<div class="coef-item${i===cuotaIdx?' sel':''}">
+      <div class="cl">${cl}</div>
+      <div class="ct">${coef(t)}</div>
+      <div class="cs">$${fmt(100000*(1+t/100))}</div>
+    </div>`;
+  }).join('');
+
+  // ── Features comparativas según competidor ──
+  const FEATURES_BASE = [
+    { label:'Liquidación del dinero',
+      mp:'⚡ Al momento',
+      comp_map:{
+        payway_cf:'🕐 10 días hábiles', payway_mp:'🕐 10 días hábiles',
+        fiserv:'🕐 1 día hábil', getnet:'🕐 1 día hábil',
+        uala:'⚡ Inmediata', nave:'🕐 1-2 días hábiles',
+        naranjax:'🕐 1 día hábil',
+        banco_bbva:'🕐 10 días hábiles', banco_galicia:'🕐 10 días hábiles', banco_santander:'🕐 10 días hábiles',
+      }
+    },
+    { label:'Mantenimiento mensual',
+      mp:'✅ Sin costo',
+      comp_map:{
+        payway_cf:'❌ $42.000/mes', payway_mp:'❌ $42.000/mes',
+        fiserv:'❌ $46.400/mes', getnet:'❌ $37.000/mes',
+        uala:'✅ Sin costo', nave:'✅ Sin costo',
+        naranjax:'✅ Sin costo',
+        banco_bbva:'❌ +$71.390/mes CC', banco_galicia:'❌ +$53.900/mes CC', banco_santander:'❌ +$57.500/mes CC',
+      }
+    },
+    { label:'Cuenta corriente bancaria',
+      mp:'✅ No requerida',
+      comp_map:{
+        payway_cf:'❌ Obligatoria', payway_mp:'❌ Obligatoria',
+        fiserv:'❌ Obligatoria', getnet:'❌ Obligatoria',
+        uala:'✅ No requerida', nave:'✅ No requerida',
+        naranjax:'✅ No requerida',
+        banco_bbva:'❌ Obligatoria', banco_galicia:'❌ Obligatoria', banco_santander:'❌ Obligatoria',
+      }
+    },
+    { label:'QR con monto desde el POS',
+      mp:'✅ Sí',
+      comp_map:{
+        payway_cf:'⚠️ No', payway_mp:'⚠️ No',
+        fiserv:'⚠️ Solo transferencia', getnet:'⚠️ 15 días para activar',
+        uala:'⚠️ Solo transferencia', nave:'✅ Sí',
+        naranjax:'✅ Sí',
+        banco_bbva:'⚠️ Via procesador', banco_galicia:'⚠️ Via procesador', banco_santander:'⚠️ Via procesador',
+      }
+    },
+    { label:'Link de pago desde el POS',
+      mp:'✅ Sí',
+      comp_map:{
+        payway_cf:'❌ No', payway_mp:'❌ No',
+        fiserv:'❌ No', getnet:'❌ No',
+        uala:'❌ No', nave:'❌ No',
+        naranjax:'❌ No',
+        banco_bbva:'❌ No', banco_galicia:'❌ No', banco_santander:'❌ No',
+      }
+    },
+    { label:'Saldo rinde en la cuenta',
+      mp:'✅ Sí · TNA ' + lastCalc.tna + '%',
+      comp_map:{
+        payway_cf:'❌ No rinde', payway_mp:'❌ No rinde',
+        fiserv:'❌ No rinde', getnet:'❌ No rinde',
+        uala:'❌ No rinde', nave:'❌ No rinde',
+        naranjax:'❌ No rinde',
+        banco_bbva:'⚠️ Solo caja de ahorro', banco_galicia:'⚠️ Solo caja de ahorro', banco_santander:'⚠️ Solo caja de ahorro',
+      }
+    },
+    { label:'Catálogo de productos',
+      mp:'✅ Sí',
+      comp_map:{
+        payway_cf:'❌ No', payway_mp:'❌ No',
+        fiserv:'❌ No', getnet:'❌ No',
+        uala:'❌ No', nave:'❌ No',
+        naranjax:'❌ No',
+        banco_bbva:'❌ No', banco_galicia:'❌ No', banco_santander:'❌ No',
+      }
+    },
+    { label:'Ingreso/egreso de efectivo',
+      mp:'✅ Sí (Negocio Express)',
+      comp_map:{
+        payway_cf:'❌ No', payway_mp:'❌ No',
+        fiserv:'❌ No', getnet:'❌ No',
+        uala:'❌ No', nave:'❌ No',
+        naranjax:'❌ No',
+        banco_bbva:'❌ No', banco_galicia:'❌ No', banco_santander:'❌ No',
+      }
+    },
+  ];
+
+  const compFeatures = FEATURES_BASE.map(f => ({
+    label: f.label,
+    mp: f.mp,
+    comp: f.comp_map[comp.id] || '—',
+    compText: null,
+  }));
+
+  // Args clave según competidor
+  const ARGS_COMP = {
+    payway_cf: [
+      {icon:'⚡',titulo:'Cobrás y tenés la plata',desc:'MP acredita al momento. Con Payway esperás hasta 10 días hábiles.'},
+      {icon:'🆓',titulo:'Sin costo mensual fijo',desc:'Payway cobra $42.000/mes de mantenimiento. Con MP no pagás nada fijo.'},
+      {icon:'🏦',titulo:'Sin cuenta corriente',desc:'Payway exige CC bancaria. Con MP abrís la cuenta gratis desde el celular.'},
+      {icon:'📈',titulo:'Tu plata trabaja sola',desc:'El saldo en MP rinde a TNA '+lastCalc.tna+'%. En Payway ese dinero no genera nada.'},
+    ],
+    payway_mp: [
+      {icon:'⚡',titulo:'Liquidación inmediata',desc:'Con Payway esperás 10 días. Con MP tenés el dinero al instante.'},
+      {icon:'🆓',titulo:'Sin costo fijo mensual',desc:'$42.000/mes de mantenimiento en Payway vs $0 en MP.'},
+      {icon:'📈',titulo:'Saldo que rinde',desc:'Tu dinero genera interés compuesto todos los días en MP.'},
+      {icon:'📦',titulo:'Más herramientas',desc:'Link de pago, catálogo, ingreso/egreso de efectivo — todo desde un solo dispositivo.'},
+    ],
+    fiserv: [
+      {icon:'💰',titulo:'Menos costo fijo',desc:'Fiserv cobra $46.400/mes por el Clover Flex. MP: $0 de mantenimiento.'},
+      {icon:'🏦',titulo:'Sin cuenta corriente',desc:'Fiserv exige CC bancaria con impuesto al débito/crédito (0,6%). MP no.'},
+      {icon:'⚡',titulo:'Acreditación al momento',desc:'MP puede acreditar al instante. Fiserv mínimo 1 día hábil.'},
+      {icon:'📈',titulo:'Rendimiento del saldo',desc:'En Fiserv el dinero no rinde. En MP genera interés compuesto diario.'},
+    ],
+    getnet: [
+      {icon:'💰',titulo:'$37.000/mes menos',desc:'Getnet cobra mantenimiento mensual. Con MP no pagás nada fijo.'},
+      {icon:'📱',titulo:'QR funcionando hoy',desc:'Getnet puede tardar 15 días hábiles en activar el QR. MP lo tenés al instante.'},
+      {icon:'🏦',titulo:'Sin cuenta corriente',desc:'Getnet exige CC bancaria. MP no requiere cuenta bancaria de ningún tipo.'},
+      {icon:'📈',titulo:'Tu saldo rinde',desc:'En Getnet el dinero no genera nada. En MP trabaja con interés compuesto.'},
+    ],
+    uala: [
+      {icon:'📱',titulo:'QR cerrado con monto',desc:'En Ualá el QR funciona como transferencia sin monto fijo. En MP controlás el monto desde el POS.'},
+      {icon:'🔗',titulo:'Link de pago desde el POS',desc:'MP permite generar links de cobro directo desde la terminal. Ualá no.'},
+      {icon:'📦',titulo:'Catálogo y más funciones',desc:'MP tiene catálogo de productos, ingreso/egreso de efectivo y métricas completas.'},
+      {icon:'📈',titulo:'Tu saldo rinde',desc:'En Ualá el dinero no rinde. En MP generás interés compuesto todos los días.'},
+    ],
+    nave: [
+      {icon:'⏳',titulo:'Sin descuento por tiempo',desc:'Nave da 30% de descuento solo 3 meses. MP te da la tasa R5 de forma permanente.'},
+      {icon:'🔗',titulo:'Link de pago desde el POS',desc:'MP permite cobrar por link directo desde la terminal. Nave no lo tiene.'},
+      {icon:'📦',titulo:'Más herramientas',desc:'Catálogo, ingreso/egreso de efectivo y métricas completas que Nave no ofrece.'},
+      {icon:'📈',titulo:'Tu saldo rinde',desc:'En Nave el dinero no rinde. En MP trabajás con interés compuesto diario.'},
+    ],
+    naranjax: [
+      {icon:'🔗',titulo:'Link de pago desde el POS',desc:'Solo MP tiene link de cobro directo desde la terminal. Naranja X no.'},
+      {icon:'📦',titulo:'Más funciones integradas',desc:'Catálogo, QR cerrado, ingreso/egreso de efectivo y métricas completas.'},
+      {icon:'📈',titulo:'Tu saldo rinde',desc:'En Naranja X el dinero no rinde. En MP generás interés compuesto todos los días.'},
+      {icon:'🛡️',titulo:'Prevención de fraude',desc:'MP tiene alertas en tiempo real y bloqueo de transacciones sospechosas.'},
+    ],
+    banco_bbva: [
+      {icon:'💸',titulo:'Sin costos bancarios fijos',desc:'BBVA suma $25.000 en transferencias + $71.390 en CC por mes. Con MP: $0.'},
+      {icon:'⚡',titulo:'Sin esperar aprobaciones',desc:'Un crédito bancario tarda 15-45 días. MP Dinero Express es preaprobado e inmediato.'},
+      {icon:'📈',titulo:'Tu saldo rinde más',desc:'La caja de ahorro bancaria rinde menos que el interés compuesto diario de MP.'},
+      {icon:'📦',titulo:'Todo en un solo lugar',desc:'Link de pago, QR, catálogo y métricas integradas — sin necesidad de cuenta bancaria.'},
+    ],
+    banco_galicia: [
+      {icon:'💸',titulo:'Sin costos bancarios fijos',desc:'Galicia suma $28.000 en transferencias + $53.900 en CC por mes. Con MP: $0.'},
+      {icon:'⚡',titulo:'Crédito inmediato',desc:'El crédito bancario tarda semanas. MP Dinero Express es preaprobado al instante.'},
+      {icon:'📈',titulo:'Mayor rendimiento',desc:'El interés compuesto diario de MP supera lo que rinde una caja de ahorro bancaria.'},
+      {icon:'📦',titulo:'Más funciones integradas',desc:'QR, link de pago, catálogo y métricas — sin necesidad de cuenta bancaria.'},
+    ],
+    banco_santander: [
+      {icon:'💸',titulo:'Sin costos bancarios fijos',desc:'Santander suma $24.000 en transferencias + $57.500 en CC por mes. Con MP: $0.'},
+      {icon:'⚡',titulo:'Crédito inmediato',desc:'El crédito bancario tarda semanas. MP Dinero Express es preaprobado al instante.'},
+      {icon:'📈',titulo:'Mayor rendimiento',desc:'El interés compuesto diario de MP supera lo que rinde una caja de ahorro bancaria.'},
+      {icon:'📦',titulo:'Más funciones integradas',desc:'QR, link de pago, catálogo y métricas — sin necesidad de cuenta bancaria.'},
+    ],
+  };
+  const compArgs = ARGS_COMP[comp.id] || [
+    {icon:'⚡',titulo:'Liquidación al momento',desc:'MP acredita al instante sin demoras.'},
+    {icon:'🆓',titulo:'Sin costos fijos',desc:'No pagás mantenimiento ni alquiler de dispositivo.'},
+    {icon:'📈',titulo:'Tu saldo rinde',desc:'Interés compuesto diario sobre el saldo en cuenta.'},
+    {icon:'📦',titulo:'Todo integrado',desc:'QR, link de pago, catálogo y métricas en un solo lugar.'},
+  ];
+
+  document.getElementById('prop-out').innerHTML=`
+  <div class="prop-wrap">
+  <div class="prop-doc">
+
+    <!-- HERO -->
+    <div class="p-hero">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="p-logo-ic">MP</div>
+        <div><div class="p-logo-t">mercado pago</div><div class="p-logo-s">Propuesta comercial personalizada</div></div>
+      </div>
+      <div class="p-date"><div class="dl">Emitida el</div><div class="dv">${today}</div></div>
+    </div>
+
+    <!-- SELLER -->
+    <div class="p-seller">
+      <div>
+        <div class="p-name">${nombre}</div>
+        <div class="p-sub">${cuit?'CUIT '+cuit+' · ':''}${fiscal?fiscal+' · ':''}$${fmt(fact)}/mes · ${PROV_NOMBRE[getGrupo(prov)]} · MP ${RL} Cat ${cat+1}</div>
+      </div>
+      ${contacto?`<div class="p-tag"><div class="tl">Para</div><div class="tv">${contacto}</div></div>`:''}
+    </div>
+
+    <!-- AHORRO HERO -->
+    <div class="p-ahorro">
+      <div class="p-ah-main-lbl">Beneficio total estimado el primer año</div>
+      <div class="p-ah-main-val">$${fmt(beneficioTotal)}</div>
+      <div class="p-ah-main-sub">Ahorro en comisiones + rendimiento del saldo</div>
+      <div class="p-ah-grid">
+        <div class="p-ah-item"><div class="al">Ahorro comisiones/mes</div><div class="av">$${fmt(ahorro)}</div><div class="as">vs ${comp.nombre.split(' ')[0]}</div></div>
+        <div class="p-ah-sep"></div>
+        <div class="p-ah-item"><div class="al">Rendimiento saldo/mes</div><div class="av">$${fmt(rend.mes)}</div><div class="as">TNA ${lastCalc.tna}% · interés compuesto</div></div>
+        <div class="p-ah-sep"></div>
+        <div class="p-ah-item"><div class="al">Beneficio total/mes</div><div class="av">$${fmt(beneficioMes)}</div><div class="as">ahorro + rendimiento${extTotal>0?'+extras':''}</div></div>
+      </div>
+    </div>
+
+    <!-- BARRAS -->
+    <div class="p-sec">
+      <div class="p-sec-title">📊 Costo real sobre tu facturación</div>
+      <div class="p-bar-row">
+        <div class="p-bar-lbl">Mercado Pago</div>
+        <div class="p-bar-trk"><div class="p-bar-fill mp" style="width:${wM}%">$${fmt(mpBruto)}/mes</div></div>
+      </div>
+      <div class="p-bar-row">
+        <div class="p-bar-lbl">${comp.nombre.split(' ')[0]}</div>
+        <div class="p-bar-trk"><div class="p-bar-fill comp" style="width:${wC}%">$${fmt(compBruto)}/mes</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:5px">Incluye proc. ${pctD}% débito + financing ${pctC}% en ${cLbl}${extTotal>0?' + $'+fmt(extTotal)+'/mes costos fijos '+comp.nombre.split(' ')[0]:''}</div>
+    </div>
+
+    <!-- COSTOS OCULTOS -->
+    ${oCSection}
+
+    <!-- TASAS POR CUOTA -->
+    <div class="p-sec">
+      <div class="p-sec-title">💳 Financiación — tasas cuota por cuota</div>
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:10px">
+        Costo total = <strong>Financing + Procesamiento</strong> ponderado por mix de ventas (${pctC}% cuotas · ${pctD}% débito).
+        Proc. MP: ${pct(mpProcProm)} prom. · Proc. ${comp.nombre.split(' ')[0]}: ${pct(compProcProm)} prom.
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#fafafa;border-bottom:1px solid var(--bd)">
+            <th rowspan="2" style="padding:8px 12px;text-align:left;font-size:11px;color:var(--tx3);font-weight:700;border-right:1px solid var(--bd)">Cuotas</th>
+            <th colspan="2" style="padding:6px 12px;text-align:center;font-size:11px;color:var(--tx3);font-weight:700;border-bottom:1px solid var(--bd)">Solo Financing</th>
+            <th colspan="2" style="padding:6px 12px;text-align:center;font-size:11px;color:var(--tx3);font-weight:700;border-bottom:1px solid var(--bd);border-left:2px solid var(--bd)">Financing + Procesamiento</th>
+            <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:11px;color:var(--tx3);font-weight:700">Ahorro</th>
+          </tr>
+          <tr style="background:#fafafa;border-bottom:2px solid var(--y)">
+            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--g);font-weight:700">MP ${RL}</th>
+            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--r);font-weight:700">${comp.nombre.split(' ')[0]}</th>
+            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--g);font-weight:700;border-left:2px solid var(--bd)">MP ${RL} TOTAL</th>
+            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--r);font-weight:700">${comp.nombre.split(' ')[0]} TOTAL</th>
+          </tr>
+        </thead>
+        <tbody>${cuotaRowsProp}</tbody>
+      </table>
+    </div>
+
+    <!-- POR QUÉ MP -->
+    \${buildPorQueMP(compFeatures, compArgs, comp)}
+
+    <!-- RENDIMIENTO -->
+    <div class="p-sec">
+      <div class="p-sec-title">📈 Tu saldo rinde mientras dormís</div>
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:14px">Con MP el dinero que entra cada día genera interés compuesto. Con ${comp.nombre.split(' ')[0]}, ese dinero no rinde nada.</div>
+      <div class="rend-grid">
+        <div class="rend-box mp">
+          <div class="rbl">💚 Mercado Pago</div>
+          <div class="rend-row"><span>Aporte diario estimado</span><span class="rv-mp">$${fmt(rend.ap)}</span></div>
+          <div class="rend-row"><span>Intereses en 30 días</span><span class="rv-mp">$${fmt(rend.mes)}</span></div>
+          <div class="rend-row"><span>Intereses en 1 año</span><span class="rv-mp">$${fmt(rend.anual)}</span></div>
+        </div>
+        <div class="rend-box comp">
+          <div class="rbl">🔴 ${comp.nombre.split(' ')[0]}</div>
+          <div class="rend-row"><span>Rendimiento mensual</span><span class="rv-comp">$0</span></div>
+          <div class="rend-row"><span>Rendimiento anual</span><span class="rv-comp">$0</span></div>
+          ${extTotal>0?`<div class="rend-row"><span>Costos extras/mes</span><span class="rv-comp">$${fmt(extTotal)}</span></div>`:''}
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--tx3);margin-top:8px">* TNA ${lastCalc.tna}% · interés compuesto con aportes diarios. Rendimientos estimativos, no garantizan resultado futuro.</div>
+    </div>
+
+    <!-- COEFICIENTES -->
+    <div class="p-sec">
+      <div class="p-sec-title">🧮 Coeficientes para trasladar a tu cliente</div>
+      <div class="coef-grid">${coefsProp}</div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:8px">Multiplicá tu precio por el coeficiente para que el cliente asuma el costo de las cuotas.</div>
+    </div>
+
+    <!-- VIGENCIA -->
+    <div class="p-vig">⏳ Vigencia de esta propuesta: <strong style="margin:0 5px">${vig}</strong> a partir del ${today}</div>
+
+    <!-- RESUMEN FINAL -->
+    <div class="p-resumen">
+      <div style="font-size:11px;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Lo que ganás eligiendo Mercado Pago</div>
+      <div class="p-resumen-grid">
+        <div class="p-res-item"><div class="prl">Ahorro tasas/mes</div><div class="prv">$${fmt(ahorro)}</div></div>
+        <div class="p-res-item"><div class="prl">Rendimiento/mes</div><div class="prv">$${fmt(rend.mes)}</div></div>
+        ${extTotal>0?`<div class="p-res-item"><div class="prl">Extras evitados/mes</div><div class="prv">$${fmt(extTotal)}</div></div>`:''}
+        <div class="p-res-item hi"><div class="prl">Beneficio total/mes</div><div class="prv">$${fmt(beneficioMes)}</div></div>
+        <div class="p-res-item hi"><div class="prl">Beneficio total/año</div><div class="prv">$${fmt(beneficioAnual)}</div></div>
+      </div>
+      <div class="p-footer">
+        <div class="p-asesor">
+          <div class="pan">${asesor||'Ejecutivo de cuenta'}</div>
+          <div class="pac">${email?email+'@mercadolibre.com':''} ${tel?'· '+tel:''}</div>
+          <div class="pac">Equipo Principalidad · Longtail & SMBs MLA</div>
+        </div>
+        <div class="p-legal">Simulación estimativa · Sin IVA · Sujeto a validación de perfil · Tasas vigentes al ${today}</div>
+      </div>
+    </div>
+
+  </div>
+  </div>`;
+}
+
+function enviarWA(){
+  if(!lastCalc){alert('Generá la propuesta primero.');return;}
+  const nombre=document.getElementById('p-nombre').value||'el comercio';
+  const contacto=document.getElementById('p-contacto').value;
+  const asesor=document.getElementById('p-asesor').value;
+  const tel=document.getElementById('p-tel').value;
+  const {comp,beneficioMes,beneficioAnual,ahorro,rend}=lastCalc;
+  const msg=`Hola${contacto?' '+contacto:''}! 👋\n\nTe comparto la propuesta de *Mercado Pago* para *${nombre}*.\n\n💰 Beneficio mensual estimado: *$${fmt(beneficioMes)}*\n📈 Proyección anual: *$${fmt(beneficioAnual)}*\n\nEn la propuesta encontrás:\n• Comparativa de tasas vs ${comp.nombre}\n• Costos reales incluyendo extras y fijos\n• Rendimiento de tu saldo con interés compuesto\n• Coeficientes para trasladar al comprador\n\n${asesor?'*'+asesor+'*\n':''}${tel||''}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ════════════════════════════════════
+// BUILD POR QUÉ MP
+// ════════════════════════════════════
+function buildPorQueMP(features, args, comp) {
+  const featureRows = features.map((f,i) => {
+    const bg = i%2===0 ? '#fff' : '#fafafa';
+    const compOk = f.comp.startsWith('✅');
+    const compWarn = f.comp.startsWith('⚠️');
+    return '<tr style="border-bottom:1px solid #E4E4E4;background:'+bg+'">'
+      + '<td style="padding:9px 14px;color:#666;font-size:13px">'+f.label+'</td>'
+      + '<td style="padding:9px 14px;text-align:center;font-size:13px;font-weight:600;color:#00A650">'+f.mp+'</td>'
+      + '<td style="padding:9px 14px;text-align:center;font-size:13px;color:'+(compOk?'#00A650':compWarn?'#D97706':'#D93025')+'">'+f.comp+'</td>'
+      + '</tr>';
+  }).join('');
+
+  const argCards = args.map(a =>
+    '<div style="background:#E6F7EE;border:1.5px solid #9ADBB8;border-radius:7px;padding:14px">'
+    + '<div style="font-size:20px;margin-bottom:6px">'+a.icon+'</div>'
+    + '<div style="font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:4px">'+a.titulo+'</div>'
+    + '<div style="font-size:11px;color:#666;line-height:1.4">'+a.desc+'</div>'
+    + '</div>'
+  ).join('');
+
+  return '<div class="p-sec">'
+    + '<div class="p-sec-title">✅ ¿Por qué elegir Mercado Pago?</div>'
+    + '<div style="overflow-x:auto;margin-bottom:14px">'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:400px">'
+    + '<thead><tr style="background:#1A1A2E">'
+    + '<th style="padding:10px 14px;text-align:left;color:rgba(255,255,255,.6);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;width:38%">Característica</th>'
+    + '<th style="padding:10px 14px;text-align:center;color:#FFE600;font-size:12px;font-weight:700">Mercado Pago</th>'
+    + '<th style="padding:10px 14px;text-align:center;color:rgba(255,255,255,.6);font-size:12px;font-weight:700">'+comp.nombre+'</th>'
+    + '</tr></thead>'
+    + '<tbody>'+featureRows+'</tbody>'
+    + '</table></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">'
+    + argCards
+    + '</div>'
+    + '</div>';
+}
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+loadComps();
+populateComp();
+onProvChange();
+</script>
+</body>
+</html>
