@@ -279,7 +279,7 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
 .p-resumen{background:var(--dk);padding:20px 28px}
 .p-resumen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
 .p-res-item{background:rgba(255,255,255,.07);border-radius:var(--rads);padding:12px;text-align:center}
-.p-res-item .prl{font-size:10px;opacity:.55;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.p-res-item .prl{font-size:10px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;font-weight:600}
 .p-res-item .prv{font-size:18px;font-weight:800;color:var(--y);font-family:'DM Mono',monospace}
 .p-res-item.hi{background:var(--y)}
 .p-res-item.hi .prl{color:rgba(0,0,0,.55);opacity:1}
@@ -1585,7 +1585,7 @@ function genPropuesta(){
 
     <!-- RESUMEN FINAL -->
     <div class="p-resumen">
-      <div style="font-size:11px;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Lo que ganás eligiendo Mercado Pago</div>
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Lo que ganás eligiendo Mercado Pago</div>
       <div class="p-resumen-grid">
         <div class="p-res-item"><div class="prl">Ahorro tasas/mes</div><div class="prv">$${fmt(ahorro)}</div></div>
         <div class="p-res-item"><div class="prl">Rendimiento/mes</div><div class="prv">$${fmt(rend.mes)}</div></div>
