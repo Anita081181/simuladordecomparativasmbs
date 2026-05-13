@@ -1254,9 +1254,9 @@ function genPropuesta(){
     const mf=FIN_MP[round]?.[i], cf=comp.fin?.[i];
     if(mf==null&&cf==null) return '';
     const sel=i===cuotaIdx;
-    // Total = financing + procesamiento ponderado por mix de ventas
-    const mpTotal = mf!=null ? mf + mpProcProm : null;
-    const compTotal = cf!=null ? cf + compProcProm : null;
+    // Total = financing + procesamiento crédito directo (sin ponderación)
+    const mpTotal = mf!=null ? mf + mpProcC : null;
+    const compTotal = cf!=null ? cf + compProcC : null;
     const d = mpTotal!=null&&compTotal!=null ? compTotal-mpTotal : null;
     return `<tr style="background:${sel?'#FFFBEA':'var(--wh)'};border-bottom:1px solid var(--bd)">
       <td style="padding:9px 12px;font-weight:${sel?800:600};color:${sel?'var(--bl)':'var(--tx2)'};border-right:1px solid var(--bd)">${cl}${sel?` <span style="background:var(--y);color:var(--dk);font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700">tu caso</span>`:''}</td>
@@ -1500,8 +1500,8 @@ function genPropuesta(){
     <div class="p-sec">
       <div class="p-sec-title">💳 Financiación — tasas cuota por cuota</div>
       <div style="font-size:11px;color:var(--tx2);margin-bottom:10px">
-        Costo total = <strong>Financing + Procesamiento</strong> ponderado por mix de ventas (${pctC}% cuotas · ${pctD}% débito).
-        Proc. MP: ${pct(mpProcProm)} prom. · Proc. ${comp.nombre.split(' ')[0]}: ${pct(compProcProm)} prom.
+        Costo total = <strong>Financing + Procesamiento crédito</strong>.
+        Proc. crédito MP: ${pct(mpProcC)} · Proc. crédito ${comp.nombre.split(' ')[0]}: ${pct(compProcC)}
       </div>
       <table style="width:100%;border-collapse:collapse">
         <thead>
