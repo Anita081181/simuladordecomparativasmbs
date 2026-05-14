@@ -937,12 +937,13 @@ function calcular(){
   const compProcD=getCompProc(compId,libCKey,false)??comp.pd??1.20;
   const compProcC=getCompProc(compId,libCKey,true)??comp.pc??2.00;
   // Si sin cuotas: financing = 0, todo es procesamiento
-  const mpFin = (cuotaIdx===-1) ? null : (FIN_MP[round]?.[cuotaIdx]??null);
+  const sinCuotas = cuotaIdx===-1;
+  const mpFin   = sinCuotas ? null : (FIN_MP[round]?.[cuotaIdx]??null);
   const compFin = sinCuotas ? null : (comp.fin?.[cuotaIdx]??null);
 
-  // Si sin cuotas: 100% procesamiento, 0% financing
-  const fC = sinCuotas ? fact*(pctD/100) : fact*(pctC/100);
-  const fD = sinCuotas ? 0 : fact*(pctD/100);
+  // Si sin cuotas: 100% débito, 0% cuotas
+  const fC = sinCuotas ? 0          : fact*(pctC/100);
+  const fD = sinCuotas ? fact        : fact*(pctD/100);
   const mpProcAmt=fC*(mpProcC/100)+fD*(mpProcD/100);
   const compProcAmt=fC*(compProcC/100)+fD*(compProcD/100);
   const mpFinAmt=mpFin!=null?fC*(mpFin/100):0;
@@ -958,7 +959,6 @@ function calcular(){
   const beneficioMes=compNeto-mpNeto;
   const beneficioAnual=beneficioMes*12;
 
-  const sinCuotas = cuotaIdx===-1;
   lastCalc={prov,cat,lib,round,cuotaIdx,sinCuotas,fact,pctC,pctD,compId,libCKey,tna,comp,extSel,extTotal,
     mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fD,
     mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
