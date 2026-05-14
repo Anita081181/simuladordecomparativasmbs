@@ -382,22 +382,24 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
       <div class="g2">
         <div class="field">
           <label>Categoría</label>
-          <select id="s-cat" onchange="onProvChange()">
+          <select id="s-cat" onchange="onCatChange()">
             <option value="0">Cat 1 · LT</option>
             <option value="1">Cat 2</option>
             <option value="2">Cat 3</option>
             <option value="3" selected>Cat 4</option>
             <option value="4">Cat 5</option>
             <option value="5">Cat 6</option>
+            <option value="pl">── Plazos Largos ──</option>
           </select>
         </div>
         <div class="field">
           <label>Liberación MP</label>
           <select id="s-lib" onchange="onProvChange()">
-            <option value="0" selected>Al momento</option>
-            <option value="1">2 días corridos</option>
-            <option value="2">5 días corridos</option>
-            <option value="3">10 días corridos</option>
+            <option value="0" selected>2 días corridos</option>
+            <option value="1">5 días corridos</option>
+            <option value="2">18 días corridos</option>
+            <option value="3">26 días corridos</option>
+            <option value="4">35 días corridos (sin costo)</option>
           </select>
         </div>
       </div>
@@ -412,8 +414,10 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
       <div class="field">
         <label>Cuota más usada</label>
         <select id="s-cuota">
+          <option value="-1">Sin cuotas (solo déb/créd 1 pago)</option>
           <option value="0">2 cuotas</option><option value="1" selected>3 cuotas</option>
           <option value="2">6 cuotas</option><option value="3">9 cuotas</option><option value="4">12 cuotas</option>
+          <option value="5">18 cuotas</option>
         </select>
       </div>
 
@@ -566,52 +570,69 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
 // TASAS MP POR GRUPO DE PROVINCIA — fuente PDFs oficiales Mar26
 // Estructura: [liberacion_idx][cat_idx] donde lib: 0=inmediata,1=2dias_c,2=5dias_c,3=10dias_c
 //   y cat: 0=Cat1(LT)...5=Cat6
+// ── TASAS DE PROCESAMIENTO MP — Tag FDV Propia
+// Fuente: imagen oficial — plazos 2, 5, 18, 26, 35 días corridos
+// lib idx: 0=2días, 1=5días, 2=18días, 3=26días, 4=35días
+// cat idx: 0=Cat1...5=Cat6
+// Nota: Cat2-Cat6 no están en la imagen → se interpolan proporcionalmente
 const PROV_PROC = {
-  // Resto: CABA, Nqn, Jujuy, Ctes, TdF, SL, LP, Salta, Mis, Tuc
+  // Resto del país: CABA, Nqn, Jujuy, Ctes, TdF, SL, LP, Salta, Mis, Tuc
   resto: {
-    d: [[3.25,2.79,2.29,1.89,1.49,1.19],[2.99,2.59,2.09,1.69,1.29,0.99],[2.99,2.59,2.09,1.69,1.29,0.99],[2.99,2.59,2.09,1.69,1.29,0.99]],
-    c: [[6.29,5.79,5.59,5.29,4.89,4.49],[6.29,5.79,5.59,5.29,4.89,4.49],[5.39,4.99,4.89,4.79,4.49,4.19],[4.39,4.19,4.09,3.99,3.49,2.99]],
-    p: [[3.75,3.55,3.35,3.15,2.95,2.75],[3.75,3.55,3.35,3.15,2.95,2.75],[3.50,3.30,3.10,2.90,2.70,2.50],[3.50,3.30,3.10,2.90,2.70,2.50]],
+    d: [[0.99,0.90,0.80,0.72,0.64,0.57],[0.79,0.71,0.64,0.57,0.50,0.45],[1.79,1.62,1.45,1.30,1.16,1.04],[0.99,0.90,0.80,0.72,0.64,0.57],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[0.99,0.90,0.80,0.72,0.64,0.57],[0.99,0.90,0.80,0.72,0.64,0.57],[1.79,1.62,1.45,1.30,1.16,1.04],[0.99,0.90,0.80,0.72,0.64,0.57],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
   // Buenos Aires, Chubut, Córdoba, Entre Ríos
   bsas: {
-    d: [[3.41,2.93,2.40,1.98,1.56,1.25],[3.14,2.72,2.19,1.77,1.35,1.04],[3.14,2.72,2.19,1.77,1.35,1.04],[3.14,2.72,2.19,1.77,1.35,1.04]],
-    c: [[6.60,6.08,5.87,5.55,5.13,4.71],[6.60,6.08,5.87,5.55,5.13,4.71],[5.66,5.24,5.13,5.03,4.71,4.40],[4.61,4.40,4.29,4.19,3.66,3.14]],
-    p: [[3.94,3.73,3.52,3.31,3.10,2.89],[3.94,3.73,3.52,3.31,3.10,2.89],[3.67,3.46,3.25,3.04,2.83,2.62],[3.67,3.46,3.25,3.04,2.83,2.62]],
+    d: [[1.03,0.94,0.84,0.75,0.67,0.60],[0.82,0.74,0.66,0.59,0.53,0.47],[1.86,1.68,1.51,1.35,1.21,1.08],[1.03,0.94,0.84,0.75,0.67,0.60],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[1.03,0.94,0.84,0.75,0.67,0.60],[1.03,0.94,0.84,0.75,0.67,0.60],[1.86,1.68,1.51,1.35,1.21,1.08],[1.03,0.94,0.84,0.75,0.67,0.60],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
   // Santa Fe
   santafe: {
-    d: [[3.32,2.85,2.34,1.93,1.52,1.22],[3.05,2.65,2.13,1.73,1.32,1.01],[3.05,2.65,2.13,1.73,1.32,1.01],[3.05,2.65,2.13,1.73,1.32,1.01]],
-    c: [[6.42,5.91,5.71,5.40,4.99,4.59],[6.42,5.91,5.71,5.40,4.99,4.59],[5.51,5.10,4.99,4.89,4.59,4.28],[4.48,4.28,4.18,4.08,3.56,3.05]],
-    p: [[3.83,3.63,3.42,3.22,3.01,2.81],[3.83,3.63,3.42,3.22,3.01,2.81],[3.57,3.37,3.17,2.96,2.76,2.55],[3.57,3.37,3.17,2.96,2.76,2.55]],
+    d: [[1.01,0.92,0.82,0.74,0.66,0.59],[0.81,0.73,0.65,0.58,0.52,0.47],[1.83,1.66,1.48,1.33,1.19,1.06],[1.01,0.92,0.82,0.74,0.66,0.59],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[1.01,0.92,0.82,0.74,0.66,0.59],[1.01,0.92,0.82,0.74,0.66,0.59],[1.83,1.66,1.48,1.33,1.19,1.06],[1.01,0.92,0.82,0.74,0.66,0.59],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
   // Río Negro
   rionegro: {
-    d: [[3.30,2.83,2.33,1.92,1.51,1.21],[3.04,2.63,2.12,1.72,1.31,1.01],[3.04,2.63,2.12,1.72,1.31,1.01],[3.04,2.63,2.12,1.72,1.31,1.01]],
-    c: [[6.39,5.88,5.68,5.37,4.97,4.56],[6.39,5.88,5.68,5.37,4.97,4.56],[5.48,5.07,4.97,4.87,4.56,4.26],[4.46,4.26,4.16,4.05,3.55,3.04]],
-    p: [[3.81,3.61,3.40,3.20,3.00,2.79],[3.81,3.61,3.40,3.20,3.00,2.79],[3.56,3.35,3.15,2.95,2.74,2.54],[3.56,3.35,3.15,2.95,2.74,2.54]],
+    d: [[0.97,0.88,0.79,0.71,0.63,0.56],[0.78,0.71,0.63,0.57,0.51,0.45],[1.76,1.59,1.43,1.28,1.14,1.02],[0.97,0.88,0.79,0.71,0.63,0.56],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[0.97,0.88,0.79,0.71,0.63,0.56],[0.97,0.88,0.79,0.71,0.63,0.56],[1.76,1.59,1.43,1.28,1.14,1.02],[0.97,0.88,0.79,0.71,0.63,0.56],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
-  // Chaco, San Juan, Santa Cruz, Santiago del Estero
+  // Chaco, San Juan, Santa Cruz, Santiago del Estero, Corrientes
   chaco: {
-    d: [[3.20,2.75,2.25,1.86,1.47,1.17],[2.94,2.55,2.06,1.66,1.27,0.97],[2.94,2.55,2.06,1.66,1.27,0.97],[2.94,2.55,2.06,1.66,1.27,0.97]],
-    c: [[6.19,5.70,5.50,5.21,4.81,4.42],[6.19,5.70,5.50,5.21,4.81,4.42],[5.31,4.91,4.81,4.72,4.42,4.13],[4.32,4.13,4.03,3.93,3.44,2.94]],
-    p: [[3.69,3.49,3.30,3.10,2.90,2.71],[3.69,3.49,3.30,3.10,2.90,2.71],[3.45,3.25,3.05,2.86,2.66,2.46],[3.45,3.25,3.05,2.86,2.66,2.46]],
+    d: [[0.97,0.88,0.79,0.71,0.63,0.56],[0.78,0.71,0.63,0.57,0.51,0.45],[1.76,1.59,1.43,1.28,1.14,1.02],[0.97,0.88,0.79,0.71,0.63,0.56],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[0.97,0.88,0.79,0.71,0.63,0.56],[0.97,0.88,0.79,0.71,0.63,0.56],[1.76,1.59,1.43,1.28,1.14,1.02],[0.97,0.88,0.79,0.71,0.63,0.56],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
   // Catamarca, Formosa, Mendoza
   catamarca: {
-    d: [[3.34,2.87,2.35,1.94,1.53,1.22],[3.07,2.66,2.15,1.74,1.32,1.02],[3.07,2.66,2.15,1.74,1.32,1.02],[3.07,2.66,2.15,1.74,1.32,1.02]],
-    c: [[6.46,5.95,5.74,5.43,5.02,4.61],[6.46,5.95,5.74,5.43,5.02,4.61],[5.53,5.12,5.02,4.92,4.61,4.30],[4.51,4.30,4.20,4.10,3.58,3.07]],
-    p: [[3.85,3.65,3.44,3.23,3.03,2.82],[3.85,3.65,3.44,3.23,3.03,2.82],[3.59,3.39,3.18,2.98,2.77,2.57],[3.59,3.39,3.18,2.98,2.77,2.57]],
+    d: [[0.97,0.88,0.79,0.71,0.63,0.56],[0.78,0.71,0.63,0.57,0.51,0.45],[1.76,1.59,1.43,1.28,1.14,1.02],[0.97,0.88,0.79,0.71,0.63,0.56],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[0.97,0.88,0.79,0.71,0.63,0.56],[0.97,0.88,0.79,0.71,0.63,0.56],[1.76,1.59,1.43,1.28,1.14,1.02],[0.97,0.88,0.79,0.71,0.63,0.56],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
   // La Rioja
   larioja: {
-    d: [[3.36,2.88,2.36,1.95,1.54,1.23],[3.09,2.67,2.16,1.74,1.33,1.02],[3.09,2.67,2.16,1.74,1.33,1.02],[3.09,2.67,2.16,1.74,1.33,1.02]],
-    c: [[6.49,5.98,5.77,5.46,5.05,4.64],[6.49,5.98,5.77,5.46,5.05,4.64],[5.56,5.15,5.05,4.95,4.64,4.33],[4.53,4.33,4.22,4.12,3.60,3.09]],
-    p: [[3.87,3.67,3.46,3.25,3.05,2.84],[3.87,3.67,3.46,3.25,3.05,2.84],[3.61,3.41,3.20,2.99,2.79,2.58],[3.61,3.41,3.20,2.99,2.79,2.58]],
+    d: [[1.01,0.92,0.82,0.74,0.66,0.59],[0.81,0.73,0.65,0.58,0.52,0.47],[1.83,1.66,1.48,1.33,1.19,1.06],[1.01,0.92,0.82,0.74,0.66,0.59],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[1.01,0.92,0.82,0.74,0.66,0.59],[1.01,0.92,0.82,0.74,0.66,0.59],[1.83,1.66,1.48,1.33,1.19,1.06],[1.01,0.92,0.82,0.74,0.66,0.59],[0.00,0.00,0.00,0.00,0.00,0.00]],
+  },
+  // Jujuy
+  jujuy: {
+    d: [[1.01,0.92,0.82,0.74,0.66,0.59],[0.81,0.73,0.65,0.58,0.52,0.47],[1.83,1.66,1.48,1.33,1.19,1.06],[1.01,0.92,0.82,0.74,0.66,0.59],[0.00,0.00,0.00,0.00,0.00,0.00]],
+    c: [[1.01,0.92,0.82,0.74,0.66,0.59],[1.01,0.92,0.82,0.74,0.66,0.59],[1.83,1.66,1.48,1.33,1.19,1.06],[1.01,0.92,0.82,0.74,0.66,0.59],[0.00,0.00,0.00,0.00,0.00,0.00]],
   },
 };
+
+// Tasas de Plazos Largos por grupo de provincia (imagen oficial)
+// Estructura: [lib_idx] donde 0=2d,1=5d,2=18d,3=26d,4=35d(sin costo)
+const PL_PROC = {
+  resto:     { d:[0.99,0.79,1.79,0.99,0.00], c:[0.99,0.99,1.79,0.99,0.00] },
+  bsas:      { d:[1.03,0.82,1.86,1.03,0.00], c:[1.03,1.03,1.86,1.03,0.00] },
+  santafe:   { d:[1.01,0.81,1.83,1.01,0.00], c:[1.01,1.01,1.83,1.01,0.00] },
+  rionegro:  { d:[0.97,0.78,1.76,0.97,0.00], c:[0.97,0.97,1.76,0.97,0.00] },
+  chaco:     { d:[0.97,0.78,1.76,0.97,0.00], c:[0.97,0.97,1.76,0.97,0.00] },
+  catamarca: { d:[0.97,0.78,1.76,0.97,0.00], c:[0.97,0.97,1.76,0.97,0.00] },
+  larioja:   { d:[1.01,0.81,1.83,1.01,0.00], c:[1.01,1.01,1.83,1.01,0.00] },
+  jujuy:     { d:[1.01,0.81,1.83,1.01,0.00], c:[1.01,1.01,1.83,1.01,0.00] },
+};
+
 const PROV_GRUPO = {
-  caba:'resto',neuquen:'resto',jujuy:'resto',corrientes:'resto',tierradelfuego:'resto',
+  caba:'resto',neuquen:'resto',jujuy:'jujuy',corrientes:'chaco',tierradelfuego:'resto',
   sanluis:'resto',lapampa:'resto',salta:'resto',misiones:'resto',tucuman:'resto',
   bsas:'bsas',cordoba:'bsas',chubut:'bsas',entrerios:'bsas',
   santafe:'santafe',rionegro:'rionegro',
@@ -624,7 +645,7 @@ const PROV_NOMBRE = {
   santafe:'Santa Fe',rionegro:'Río Negro',
   chaco:'Chaco/SJ/SC/SgoE',catamarca:'Cat/Fsa/Mza',larioja:'La Rioja'
 };
-const LIB_LABELS = ['Al momento','2 días corridos','5 días corridos','10 días corridos'];
+const LIB_LABELS = ['2 días corridos','5 días corridos','18 días corridos','26 días corridos','35 días corridos (sin costo)'];
 const LIB_LABELS_C = {inmediata:'Inmediata','1dia_h':'1 día hábil','2dias_h':'2 días hábiles','10dias_h':'10 días hábiles'};
 
 // TASAS FINANCIACIÓN MP
@@ -736,6 +757,12 @@ function staleLabel(d){
 function staleClass(d){ return {fresh:'bg',warn:'ba',old:'br'}[stale(d)]||'br'; }
 function getGrupo(prov){ return PROV_GRUPO[prov]||'resto'; }
 function getProcMP(prov,cat,lib,esC){
+  if(cat==='pl'){
+    // Plazos Largos — usar PL_PROC
+    const g=PL_PROC[getGrupo(prov)]||PL_PROC['resto'];
+    const med=esC?'c':'d';
+    return g[med][lib]??0;
+  }
   const g=PROV_PROC[getGrupo(prov)];
   const med=esC?'c':'d';
   return g[med][lib][cat];
@@ -785,28 +812,55 @@ function setTab(id){
 // ════════════════════════════════════
 // PROVINCIA / TASAS PREVIEW
 // ════════════════════════════════════
+function onCatChange(){
+  const cat = document.getElementById('s-cat').value;
+  const libSel = document.getElementById('s-lib');
+  const curVal = libSel.value;
+  // Plazos Largos y Cat 1-6 tienen los mismos días de liberación disponibles
+  // Solo cambia la etiqueta del grupo en el preview
+  onProvChange();
+}
+
 function onProvChange(){
   const prov=document.getElementById('s-prov').value;
-  const cat=parseInt(document.getElementById('s-cat').value);
+  const catRaw=document.getElementById('s-cat').value;
+  const cat = catRaw==='pl' ? 'pl' : parseInt(catRaw);
   const lib=parseInt(document.getElementById('s-lib').value);
   const g=PROV_PROC[getGrupo(prov)];
-  const rows=['Cat 1 · LT','Cat 2','Cat 3','Cat 4','Cat 5','Cat 6'].map((lbl,i)=>{
-    const sel=i===cat;
-    const d=g.d[lib][i], c=g.c[lib][i], p=g.p[lib][i];
-    return `<tr class="${sel?'sel':''}">
-      <td>${lbl}${sel?' ◀':''}</td>
-      <td>${pct(d)}</td><td>${pct(c)}</td><td>${pct(p)}</td>
-    </tr>`;
-  }).join('');
   const grupNombre=PROV_NOMBRE[getGrupo(prov)]||'';
   const libLabel=LIB_LABELS[lib];
-  document.getElementById('prov-tbl').innerHTML=`
-    <thead><tr>
+  let tableHTML='';
+
+  if(cat==='pl'){
+    const plg=PL_PROC[getGrupo(prov)]||PL_PROC['resto'];
+    const plRows=LIB_LABELS.map((lbl,i)=>{
+      const sel=i===lib;
+      return `<tr class="${sel?'sel':''}">
+        <td>${lbl}${sel?' ◀':''}</td>
+        <td>${pct(plg.d[i])}</td><td>${pct(plg.c[i])}</td><td>—</td>
+      </tr>`;
+    }).join('');
+    tableHTML=`<thead><tr>
+      <th style="text-align:left">Plazos Largos · ${grupNombre}</th>
+      <th>Débito</th><th>Crédito</th><th>Prepaga</th>
+    </tr></thead><tbody>${plRows}</tbody>`;
+  } else {
+    const rows=['Cat 1 · LT','Cat 2','Cat 3','Cat 4','Cat 5','Cat 6'].map((lbl,i)=>{
+      const sel=i===cat;
+      const d=g.d[lib][i], c=g.c[lib][i], p=g.p?.[lib]?.[i]??0;
+      return `<tr class="${sel?'sel':''}">
+        <td>${lbl}${sel?' ◀':''}</td>
+        <td>${pct(d)}</td><td>${pct(c)}</td><td>${pct(p)}</td>
+      </tr>`;
+    }).join('');
+    tableHTML=`<thead><tr>
       <th style="text-align:left">Cat. · ${grupNombre} · ${libLabel}</th>
       <th>Débito</th><th>Crédito</th><th>Prepaga</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>`;
+    </tr></thead><tbody>${rows}</tbody>`;
+  }
+  document.getElementById('prov-tbl').innerHTML=tableHTML;
 }
+
 
 // ════════════════════════════════════
 // COMPETIDOR
@@ -836,7 +890,8 @@ function onCompChange(){
 // ════════════════════════════════════
 function calcular(){
   const prov=document.getElementById('s-prov').value;
-  const cat=parseInt(document.getElementById('s-cat').value);
+  const catRaw=document.getElementById('s-cat').value;
+  const cat = catRaw==='pl' ? 'pl' : parseInt(catRaw);
   const lib=parseInt(document.getElementById('s-lib').value);
   const round=document.getElementById('s-round').value;
   const cuotaIdx=parseInt(document.getElementById('s-cuota').value);
@@ -859,11 +914,14 @@ function calcular(){
   const mpProcC=getProcMP(prov,cat,lib,true);
   const compProcD=getCompProc(compId,libCKey,false)??comp.pd??1.20;
   const compProcC=getCompProc(compId,libCKey,true)??comp.pc??2.00;
-  const mpFin=FIN_MP[round]?.[cuotaIdx]??null;
-  const compFin=comp.fin?.[cuotaIdx]??null;
+  // Si sin cuotas: financing = 0, todo es procesamiento
+  const sinCuotas = cuotaIdx === -1;
+  const mpFin = sinCuotas ? null : (FIN_MP[round]?.[cuotaIdx]??null);
+  const compFin = sinCuotas ? null : (comp.fin?.[cuotaIdx]??null);
 
-  // Montos
-  const fC=fact*(pctC/100), fD=fact*(pctD/100);
+  // Si sin cuotas: 100% procesamiento, 0% financing
+  const fC = sinCuotas ? fact*(pctD/100) : fact*(pctC/100);
+  const fD = sinCuotas ? 0 : fact*(pctD/100);
   const mpProcAmt=fC*(mpProcC/100)+fD*(mpProcD/100);
   const compProcAmt=fC*(compProcC/100)+fD*(compProcD/100);
   const mpFinAmt=mpFin!=null?fC*(mpFin/100):0;
@@ -894,7 +952,7 @@ function renderResult(){
     ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual}=lastCalc;
 
   const RL=ROUND_LABELS[round];
-  const cLbl=CUOTA_LABELS[cuotaIdx];
+  const cLbl = sinCuotas ? 'Sin cuotas' : (CUOTA_LABELS[cuotaIdx]||'—');
   const wM=(mpBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
   const wC=(compBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
 
@@ -1215,7 +1273,7 @@ function genPropuesta(){
   const vig=document.getElementById('p-vig').value;
   const today=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
   const RL=ROUND_LABELS[round];
-  const cLbl=CUOTA_LABELS[cuotaIdx];
+  const cLbl = sinCuotas ? 'Sin cuotas' : (CUOTA_LABELS[cuotaIdx]||'—');
   const beneficioTotal=beneficioAnual;
 
   const wM=(mpBruto/Math.max(mpBruto,compBruto)*100).toFixed(1);
