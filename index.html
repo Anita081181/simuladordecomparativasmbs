@@ -937,8 +937,7 @@ function calcular(){
   const compProcD=getCompProc(compId,libCKey,false)??comp.pd??1.20;
   const compProcC=getCompProc(compId,libCKey,true)??comp.pc??2.00;
   // Si sin cuotas: financing = 0, todo es procesamiento
-  const sinCuotas = cuotaIdx === -1;
-  const mpFin = sinCuotas ? null : (FIN_MP[round]?.[cuotaIdx]??null);
+  const mpFin = (cuotaIdx===-1) ? null : (FIN_MP[round]?.[cuotaIdx]??null);
   const compFin = sinCuotas ? null : (comp.fin?.[cuotaIdx]??null);
 
   // Si sin cuotas: 100% procesamiento, 0% financing
