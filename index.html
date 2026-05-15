@@ -442,7 +442,7 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
       <div id="prov-preview" style="border:1px solid var(--gbo);border-radius:var(--rads);overflow:hidden;margin-top:4px">
         <div style="background:var(--gb);padding:5px 10px;font-size:10px;color:var(--g);font-weight:700;border-bottom:1px solid var(--gbo)">Tasas MP según provincia y categoría</div>
         <table class="prov-tbl" id="prov-tbl"></table>
-        <div style="background:var(--gb);padding:3px 10px;font-size:10px;color:var(--tx3)">Cat1=0-$3M · Cat2=$3-6M · Cat3=$6-12M · Cat4=$12-23M · Cat5=$23-45M · Cat6=+$45M</div>
+        <div style="background:var(--gb);padding:3px 10px;font-size:10px;color:var(--tx3)">C1=0-3M · C2=3-6M · C3=6-12M · C4=12-23M · C5=23-45M · C6=+45M</div>
       </div>
 
       <div class="divider"></div>
@@ -668,8 +668,8 @@ const PL_CATS = {
 };
 const PL_LIB_D = ['2d','14d'];
 const PL_LIB_C = ['0d','21d','40d'];
-const PL_LIB_D_LABEL = {'2d':'2 días','14d':'14 días'};
-const PL_LIB_C_LABEL = {'0d':'Inmediata','21d':'21 días','40d':'40 días'};
+const PL_LIB_D_LABEL = {'2d':'2d','14d':'14d'};
+const PL_LIB_C_LABEL = {'0d':'Inmed.','21d':'21d','40d':'40d'};
 
 const PROV_GRUPO = {
   caba:'resto',neuquen:'resto',jujuy:'jujuy',corrientes:'chaco',tierradelfuego:'resto',
@@ -897,12 +897,12 @@ function onProvChange(){
   if(isPL(cat)){
     const plg=PL_CATS[cat];
     const dRows=Object.entries(plg.d).map(([k,v])=>`<tr class="${k===libPLd?'sel':''}">
-      <td>${PL_LIB_D_LABEL[k]||k}${k===libPLd?' ◀':''}  (Débito)</td>
+      <td>${PL_LIB_D_LABEL[k]||k}${k===libPLd?' ◀':''}  (Déb)</td>
       <td>${pct(v)}</td><td>—</td><td>—</td></tr>`).join('');
     const cRows=Object.entries(plg.c).map(([k,v])=>`<tr class="${k===libPLc?'sel':''}">
-      <td>${PL_LIB_C_LABEL[k]||k}${k===libPLc?' ◀':''}  (Créd/Cuotas)</td>
+      <td>${PL_LIB_C_LABEL[k]||k}${k===libPLc?' ◀':''}  (Créd)</td>
       <td>—</td><td>${pct(v)}</td><td>—</td></tr>`).join('');
-    const pRow=Object.entries(plg.p).map(([k,v])=>`<tr><td>${k} (Prepaga)</td><td>—</td><td>—</td><td>${pct(v)}</td></tr>`).join('');
+    const pRow=Object.entries(plg.p).map(([k,v])=>`<tr><td>${k} (Prep)</td><td>—</td><td>—</td><td>${pct(v)}</td></tr>`).join('');
     tableHTML=`<thead><tr>
       <th style="text-align:left">${plg.label} · ${grupNombre}</th>
       <th>Débito</th><th>Crédito</th><th>Prepaga</th>
