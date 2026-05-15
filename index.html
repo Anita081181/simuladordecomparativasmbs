@@ -806,7 +806,7 @@ function getProcMP(prov,cat,lib,esC,libPLd,libPLc){
   }
   const g=PROV_PROC[getGrupo(prov)];
   const med=esC?'c':'d';
-  return g[med][lib][cat];
+  return g[med][lib][parseInt(cat)];
 }
 function getCompProc(id,libKey,esC){
   const t=COMP_PROC[id]; if(!t) return null;
@@ -1161,7 +1161,7 @@ function renderResult(){
     <div class="sec-lbl" style="margin-bottom:10px">Ecuación del costo neto real</div>
     <div class="eq-grid">
       <div class="eq-box mp">
-        <div class="eq-lbl">✅ Mercado Pago ${RL} · Cat ${cat+1}</div>
+        <div class="eq-lbl">✅ Mercado Pago ${RL} · ${isPL(cat)?PL_CATS[cat].label:'Cat '+(cat+1)}</div>
         <div class="eq-row" style="color:var(--tx2)"><span>Débito (${pct(mpProcD)})</span><span>$${fmt(fD*(mpProcD/100))}</span></div>
         <div class="eq-row" style="color:var(--tx2)"><span>Créd 1p (${pct(mpProcC)})</span><span>$${fmt(fCr*(mpProcC/100))}</span></div>
         <div class="eq-row" style="color:var(--tx2)"><span>Cuotas proc. (${pct(mpProcC)})</span><span>$${fmt(fC*(mpProcC/100))}</span></div>
@@ -1616,7 +1616,7 @@ function genPropuesta(){
     <div class="p-seller">
       <div>
         <div class="p-name">${nombre}</div>
-        <div class="p-sub">${cuit?'CUIT '+cuit+' · ':''}${fiscal?fiscal+' · ':''}$${fmt(fact)}/mes · ${PROV_NOMBRE[getGrupo(prov)]} · MP ${RL} Cat ${cat+1}</div>
+        <div class="p-sub">${cuit?'CUIT '+cuit+' · ':''}${fiscal?fiscal+' · ':''}$${fmt(fact)}/mes · ${PROV_NOMBRE[getGrupo(prov)]} · MP ${RL} ${isPL(cat)?PL_CATS[cat].label:'Cat '+(cat+1)}</div>
       </div>
       ${contacto?`<div class="p-tag"><div class="tl">Para</div><div class="tv">${contacto}</div></div>`:''}
     </div>
