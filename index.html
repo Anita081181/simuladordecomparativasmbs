@@ -957,8 +957,9 @@ function onCompChange(){
 function calcular(){
   const prov=document.getElementById('s-prov').value;
   const catRaw=document.getElementById('s-cat').value;
-  const cat = catRaw==='pl' ? 'pl' : parseInt(catRaw);
-  const lib=parseInt(document.getElementById('s-lib').value);
+  const cat = isPL(catRaw) ? catRaw : parseInt(catRaw);
+  const libRaw=document.getElementById('s-lib').value;
+  const lib = isPL(catRaw) ? 0 : (parseInt(libRaw)||0);
   const round=document.getElementById('s-round').value;
   const cuotaIdx=parseInt(document.getElementById('s-cuota').value);
   const fact=parseFloat(document.getElementById('s-fact').value)||0;
