@@ -1686,49 +1686,103 @@ function genPropuesta(){
     <!-- COSTOS OCULTOS -->
     ${oCSection}
 
-    <!-- TASAS POR CUOTA -->
+    <!-- DETALLE DE COSTOS POR MEDIO DE PAGO -->
     <div class="p-sec">
-      <div class="p-sec-title">💳 Financiación — tasas cuota por cuota</div>
-      <div style="font-size:11px;color:var(--tx2);margin-bottom:10px">
-        Costo total = <strong>Financing + Procesamiento</strong> ponderado por mix de ventas (${pctC}% cuotas · ${pctD}% débito).
-        Proc. MP: ${pct(mpProcProm)} prom. · Proc. ${comp.nombre.split(' ')[0]}: ${pct(compProcProm)} prom.
-      </div>
-      <div style="margin-top:12px;background:#F8F8F8;border-radius:var(--rads);padding:12px 16px;font-size:12px">
-        <div style="font-weight:700;color:var(--tx2);text-transform:uppercase;font-size:10px;letter-spacing:.05em;margin-bottom:10px">Detalle de costos por combinación de medio de pago</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div style="background:var(--gb);border:1px solid var(--gbo);border-radius:var(--rads);padding:10px 12px">
-            <div style="font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">✅ Mercado Pago ${RL}</div>
-            <div style="font-size:12px;color:var(--tx2);line-height:1.8">
-              <div style="display:flex;justify-content:space-between"><span>Crédito/cuotas (proc. ${pct(mpProcC)} + fin. ${pct(mpFin)})</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpFin!=null?mpProcC+mpFin:null)}</span></div>
-              <div style="display:flex;justify-content:space-between"><span>Débito / 1 pago (solo proc.)</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcD)}</span></div>
-            </div>
-          </div>
-          <div style="background:var(--rb);border:1px solid var(--rbo);border-radius:var(--rads);padding:10px 12px">
-            <div style="font-size:10px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">❌ ${comp.nombre}</div>
-            <div style="font-size:12px;color:var(--tx2);line-height:1.8">
-              <div style="display:flex;justify-content:space-between"><span>Crédito/cuotas (proc. ${pct(compProcC)} + fin. ${pct(compFin)})</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compFin!=null?compProcC+compFin:null)}</span></div>
-              <div style="display:flex;justify-content:space-between"><span>Débito / 1 pago (solo proc.)</span><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcD)}</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <table style="width:100%;border-collapse:collapse">
+      <div class="p-sec-title">💳 Detalle de costos por medio de pago</div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px">
         <thead>
-          <tr style="background:#fafafa;border-bottom:1px solid var(--bd)">
-            <th rowspan="2" style="padding:8px 12px;text-align:left;font-size:11px;color:var(--tx3);font-weight:700;border-right:1px solid var(--bd)">Cuotas</th>
-            <th colspan="2" style="padding:6px 12px;text-align:center;font-size:11px;color:var(--tx3);font-weight:700;border-bottom:1px solid var(--bd)">Solo Financing</th>
-            <th colspan="2" style="padding:6px 12px;text-align:center;font-size:11px;color:var(--tx3);font-weight:700;border-bottom:1px solid var(--bd);border-left:2px solid var(--bd)">Financing + Procesamiento</th>
-            <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:11px;color:var(--tx3);font-weight:700">Ahorro</th>
-          </tr>
-          <tr style="background:#fafafa;border-bottom:2px solid var(--y)">
-            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--g);font-weight:700">MP ${RL}</th>
-            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--r);font-weight:700">${comp.nombre.split(' ')[0]}</th>
-            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--g);font-weight:700;border-left:2px solid var(--bd)">MP ${RL} TOTAL</th>
-            <th style="padding:5px 12px;text-align:center;font-size:10px;color:var(--r);font-weight:700">${comp.nombre.split(' ')[0]} TOTAL</th>
+          <tr style="background:var(--dk)">
+            <th style="padding:9px 12px;text-align:left;color:rgba(255,255,255,.6);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Medio de pago</th>
+            <th style="padding:9px 10px;text-align:right;color:rgba(255,255,255,.5);font-size:10px;font-weight:600">% ventas</th>
+            <th style="padding:9px 10px;text-align:right;color:rgba(255,255,255,.5);font-size:10px;font-weight:600">Monto</th>
+            <th style="padding:9px 10px;text-align:center;color:var(--g);font-size:10px;font-weight:700">Tasa MP ${RL}</th>
+            <th style="padding:9px 10px;text-align:center;color:var(--g);font-size:10px;font-weight:700">Costo MP</th>
+            <th style="padding:9px 10px;text-align:center;color:var(--r);font-size:10px;font-weight:700">Tasa ${comp.nombre.split(' ')[0]}</th>
+            <th style="padding:9px 10px;text-align:center;color:var(--r);font-size:10px;font-weight:700">Costo ${comp.nombre.split(' ')[0]}</th>
           </tr>
         </thead>
-        <tbody>${cuotaRowsProp}</tbody>
+        <tbody>
+          <!-- PROCESAMIENTO -->
+          <tr style="background:#f8f8f8">
+            <td colspan="7" style="padding:5px 12px;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bd)">Procesamiento</td>
+          </tr>
+          <!-- Débito -->
+          <tr style="border-bottom:1px solid var(--bd)">
+            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Tarjeta de débito</td>
+            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctD}%</td>
+            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fD)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcD)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(fD*(mpProcD/100))}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcD)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(fD*(compProcD/100))}</td>
+          </tr>
+          <!-- Crédito 1 pago -->
+          <tr style="border-bottom:1px solid var(--bd)">
+            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Crédito 1 pago</td>
+            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctCr}%</td>
+            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fCr)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcC)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(fCr*(mpProcC/100))}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcC)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(fCr*(compProcC/100))}</td>
+          </tr>
+          <!-- FINANCIACIÓN EN CUOTAS -->
+          <tr style="background:#f8f8f8">
+            <td colspan="7" style="padding:5px 12px;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bd)">Financiación en cuotas · ${cLbl}</td>
+          </tr>
+          <!-- Procesamiento cuotas -->
+          <tr style="border-bottom:1px solid var(--bd)">
+            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Procesamiento ${cLbl}</td>
+            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctC}%</td>
+            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fC)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcC)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(fC*(mpProcC/100))}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcC)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(fC*(compProcC/100))}</td>
+          </tr>
+          <!-- Financiación cuotas -->
+          <tr style="border-bottom:1px solid var(--bd);background:#FFFBEA">
+            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Financiación ${cLbl}</td>
+            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctC}%</td>
+            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fC)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpFin)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(mpFinAmt)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compFin)}</td>
+            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(compFinAmt)}</td>
+          </tr>
+          <!-- Subtotal -->
+          <tr style="border-bottom:1px solid var(--bd)">
+            <td colspan="3" style="padding:9px 12px;font-weight:700;color:var(--tx)">Subtotal tasas</td>
+            <td colspan="2" style="padding:9px 10px;text-align:center;background:var(--gb)">
+              <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--g);font-size:13px">$${fmt(mpBruto)}</span>
+            </td>
+            <td colspan="2" style="padding:9px 10px;text-align:center;background:var(--rb)">
+              <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--r);font-size:13px">$${fmt(compBruto-extTotal)}</span>
+            </td>
+          </tr>
+          <!-- Rendimiento -->
+          <tr style="border-bottom:1px solid var(--bd);background:var(--gb)">
+            <td colspan="3" style="padding:9px 12px;font-weight:600;color:var(--g)">↩ Rendimiento saldo (TNA ${lastCalc.tna}%)</td>
+            <td colspan="2" style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">− $${fmt(rend.mes)}</td>
+            <td colspan="2" style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;color:var(--tx3)">$0</td>
+          </tr>
+          <!-- Costo neto -->
+          <tr style="background:var(--dk)">
+            <td colspan="3" style="padding:10px 12px;font-weight:700;color:var(--y)">Costo neto total / mes</td>
+            <td colspan="2" style="padding:10px 10px;text-align:center">
+              <span style="font-family:'DM Mono',monospace;font-weight:700;color:#4ADE80;font-size:14px">$${fmt(mpNeto)}</span>
+              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">${pct(mpNeto/fact*100)} de tu facturación</div>
+            </td>
+            <td colspan="2" style="padding:10px 10px;text-align:center">
+              <span style="font-family:'DM Mono',monospace;font-weight:700;color:#F87171;font-size:14px">$${fmt(compNeto)}</span>
+              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">${pct(compNeto/fact*100)} de tu facturación</div>
+            </td>
+          </tr>
+        </tbody>
       </table>
+      </div>
+      <div style="font-size:10px;color:var(--tx3);margin-top:6px">Sin IVA · Tasas según categoría y plazo de liberación seleccionados · Rendimiento estimativo TNA ${lastCalc.tna}%</div>
     </div>
 
     ${buildPorQueMP(compFeatures, compArgs, comp)}
