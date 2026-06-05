@@ -462,9 +462,41 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
       </div>
       <div class="sec-lbl" style="margin-top:10px">Costos extras que aplican</div>
       <div id="extras-check"></div>
+      <div id="cobro-anticipado-wrap" style="display:none;margin-top:8px;border:1px solid var(--ambo);border-radius:var(--rads);padding:10px 12px;background:var(--amb)">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--am);cursor:pointer;font-weight:600">
+          <input type="checkbox" id="pw-adel-on" onchange="onAdelChange()" style="accent-color:var(--am);width:14px;height:14px"/>
+          Cobro anticipado Payway (0,53%/día)
+        </label>
+        <div id="pw-adel-fields" style="display:none;margin-top:8px">
+          <div class="g2">
+            <div class="field"><label>Días a adelantar</label><input type="number" id="pw-adel-dias" value="30" min="1" max="365" oninput="calcAdelPreview()"/></div>
+            <div class="field"><label>Costo estimado/mes</label><div id="pw-adel-preview" style="padding:8px 10px;background:var(--wh);border-radius:var(--rads);font-size:13px;font-weight:700;color:var(--r);font-family:'DM Mono',monospace">$0</div></div>
+          </div>
+          <div style="font-size:10px;color:var(--am);margin-top:4px">Cálculo: monto cuotas × 0,53% × días</div>
+        </div>
+      </div>
 
       <div class="divider"></div>
       <div class="field"><label>TNA MP (%)</label><input type="number" id="s-tna" value="19.30" step="0.1" min="0"/></div>
+      <div class="divider"></div>
+      <div class="sec-lbl">Beneficios MP a destacar</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2);padding:5px 0;cursor:pointer">
+        <input type="checkbox" id="mp-cb-on" onchange="document.getElementById('mp-cb-wrap').style.display=this.checked?'block':'none'" style="accent-color:var(--bl);width:14px;height:14px"/>
+        <span style="font-weight:600">Seguro de contracargos</span>
+      </label>
+      <div id="mp-cb-wrap" style="display:none;margin:4px 0 8px 22px">
+        <div class="field"><label>Monto promedio/mes ($)</label><input type="number" id="mp-cb-monto" placeholder="Ej: 50000" min="0"/></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2);padding:5px 0;cursor:pointer">
+        <input type="checkbox" id="mp-cred-on" onchange="document.getElementById('mp-cred-wrap').style.display=this.checked?'block':'none'" style="accent-color:var(--bl);width:14px;height:14px"/>
+        <span style="font-weight:600">Oferta de crédito MP</span>
+      </label>
+      <div id="mp-cred-wrap" style="display:none;margin:4px 0 0 22px">
+        <div class="g2">
+          <div class="field"><label>Monto disponible ($)</label><input type="number" id="mp-cred-monto" placeholder="Ej: 5000000" min="0"/></div>
+          <div class="field"><label>TNA oferta (%)</label><input type="number" id="mp-cred-tna" placeholder="Ej: 50" min="0" step="0.1"/></div>
+        </div>
+      </div>
       <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="calcular()">Calcular →</button>
     </div>
   </div>
@@ -975,13 +1007,36 @@ function onCompChange(){
   const id=document.getElementById('s-comp').value;
   const c=comps.find(x=>x.id===id);
   const el=document.getElementById('extras-check');
-  if(!c||!c.extras||!c.extras.length){ el.innerHTML='<div style="font-size:11px;color:var(--tx3)">Sin costos extras registrados</div>'; return; }
-  el.innerHTML=c.extras.map((e,i)=>`
-    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);padding:4px 0;border-bottom:1px dashed var(--bd);cursor:pointer">
-      <input type="checkbox" id="ec-${i}" ${e.on?'checked':''} style="accent-color:var(--bl);width:13px;height:13px"/>
-      <span style="flex:1">${e.l}</span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--r)">${e.m>0?'$'+fmt(e.m)+'/mes':'Req.'}</span>
-    </label>`).join('');
+  if(!c||!c.extras||!c.extras.length){ el.innerHTML='<div style="font-size:11px;color:var(--tx3)">Sin costos extras registrados</div>'; }
+  else {
+    el.innerHTML=c.extras.map((e,i)=>`
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);padding:4px 0;border-bottom:1px dashed var(--bd);cursor:pointer">
+        <input type="checkbox" id="ec-${i}" ${e.on?'checked':''} style="accent-color:var(--bl);width:13px;height:13px"/>
+        <span style="flex:1">${e.l}</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--r)">${e.m>0?'$'+fmt(e.m)+'/mes':'Req.'}</span>
+      </label>`).join('');
+  }
+  // Mostrar cobro anticipado solo para Payway
+  const pw = id==='payway_cf'||id==='payway_mp';
+  const caWrap = document.getElementById('cobro-anticipado-wrap');
+  if(caWrap) caWrap.style.display = pw ? 'block' : 'none';
+}
+
+function onAdelChange(){
+  const on = document.getElementById('pw-adel-on')?.checked;
+  const fields = document.getElementById('pw-adel-fields');
+  if(fields) fields.style.display = on ? 'block' : 'none';
+  calcAdelPreview();
+}
+
+function calcAdelPreview(){
+  const dias = parseFloat(document.getElementById('pw-adel-dias')?.value)||30;
+  const fact = parseFloat(document.getElementById('s-fact')?.value)||0;
+  const pctC = parseFloat(document.getElementById('s-pctc')?.value)||0;
+  const montoC = fact*(pctC/100);
+  const costo = montoC*(0.53/100)*dias;
+  const el = document.getElementById('pw-adel-preview');
+  if(el) el.textContent = '$'+fmt(costo);
 }
 
 // ════════════════════════════════════
@@ -1010,7 +1065,24 @@ function calcular(){
   // Extras seleccionados
   const extSel=[];
   (comp.extras||[]).forEach((e,i)=>{ const cb=document.getElementById('ec-'+i); if(cb&&cb.checked&&e.m>0) extSel.push(e); });
-  const extTotal=extSel.reduce((s,e)=>s+e.m,0);
+  let extTotal=extSel.reduce((s,e)=>s+e.m,0);
+
+  // Cobro anticipado Payway
+  const adelOn = document.getElementById('pw-adel-on')?.checked||false;
+  const adelDias = parseFloat(document.getElementById('pw-adel-dias')?.value)||30;
+  let adelCosto = 0;
+  if(adelOn && (compId==='payway_cf'||compId==='payway_mp')){
+    const montoC = fact*(pctC/100);
+    adelCosto = montoC*(0.53/100)*adelDias;
+    extTotal += adelCosto;
+  }
+
+  // Beneficios MP
+  const mpCbOn = document.getElementById('mp-cb-on')?.checked||false;
+  const mpCbMonto = parseFloat(document.getElementById('mp-cb-monto')?.value)||0;
+  const mpCredOn = document.getElementById('mp-cred-on')?.checked||false;
+  const mpCredMonto = parseFloat(document.getElementById('mp-cred-monto')?.value)||0;
+  const mpCredTna = parseFloat(document.getElementById('mp-cred-tna')?.value)||0;
 
   // Tasas de procesamiento MP — débito y crédito por separado
   const mpProcD  = getProcMP(prov,cat,lib,false,libPLd,libPLc); // débito
@@ -1045,7 +1117,7 @@ function calcular(){
   const beneficioMes=compNeto-mpNeto;
   const beneficioAnual=beneficioMes*12;
 
-  lastCalc={prov,cat,lib,libPLd,libPLc,round,cuotaIdx,sinCuotas,fact,pctC,pctCr,pctD,compId,libCKey,tna,comp,extSel,extTotal,
+  lastCalc={prov,cat,lib,libPLd,libPLc,round,cuotaIdx,sinCuotas,fact,pctC,pctCr,pctD,compId,libCKey,tna,comp,extSel,extTotal,adelOn,adelDias,adelCosto,mpCbOn,mpCbMonto,mpCredOn,mpCredMonto,mpCredTna,
     mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fCr,fD,
     mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
     ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual};
@@ -1054,7 +1126,7 @@ function calcular(){
 }
 
 function renderResult(){
-  const {prov,cat,lib,libPLd,libPLc,round,cuotaIdx,sinCuotas,fact,pctC,pctCr,pctD,comp,extSel,extTotal,
+  const {prov,cat,lib,libPLd,libPLc,round,cuotaIdx,sinCuotas,fact,pctC,pctCr,pctD,comp,extSel,extTotal,adelOn,adelDias,adelCosto,mpCbOn,mpCbMonto,mpCredOn,mpCredMonto,mpCredTna,
     mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fCr,fD,
     mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
     ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual}=lastCalc;
@@ -1072,6 +1144,10 @@ function renderResult(){
       <td>⚠ ${e.l}</td>
       <td style="color:var(--g)">$0</td><td style="color:var(--r)">$${fmt(e.m)}/mes</td><td></td><td></td>
     </tr>`).join('');
+  const adelRow = adelOn&&adelCosto>0 ? `<tr class="ext-row">
+    <td>⚠ Cobro anticipado ${comp.nombre.split(' ')[0]} (${adelDias}d × 0,53%)</td>
+    <td style="color:var(--g)">$0</td><td style="color:var(--r)">$${fmt(adelCosto)}</td><td></td><td></td>
+  </tr>` : '';
 
   const totExtRows=extSel.length?`<tr style="background:var(--rb)">
     <td style="font-weight:700;color:var(--r)">Total extras</td>
@@ -1169,7 +1245,7 @@ function renderResult(){
           <td class="vr" style="font-weight:700">$${fmt(compBruto-extTotal)}</td>
           <td class="vn">${pct((compBruto-extTotal)/fact*100)}</td>
         </tr>
-        ${extRows}${totExtRows}
+        ${extRows}${adelRow}${totExtRows}
         <tr class="sec-row"><td colspan="5">Rendimiento del saldo (TNA ${lastCalc.tna}% · interés compuesto)</td></tr>
         <tr class="rend-row">
           <td>Intereses generados en 30 días</td>
@@ -1374,7 +1450,7 @@ function genPropuesta(){
   if(!lastCalc){alert('Primero calculá en el simulador.');return;}
   const nombre=document.getElementById('p-nombre').value.trim();
   if(!nombre){alert('Ingresá el nombre del comercio.');return;}
-  const {prov,cat,lib,libPLd,libPLc,round,cuotaIdx,sinCuotas,fact,pctC,pctCr,pctD,comp,extSel,extTotal,
+  const {prov,cat,lib,libPLd,libPLc,round,cuotaIdx,sinCuotas,fact,pctC,pctCr,pctD,comp,extSel,extTotal,adelOn,adelDias,adelCosto,mpCbOn,mpCbMonto,mpCredOn,mpCredMonto,mpCredTna,
     mpProcD,mpProcC,compProcD,compProcC,mpFin,compFin,fC,fCr,fD,
     mpProcAmt,compProcAmt,mpFinAmt,compFinAmt,mpBruto,compBruto,
     ahorro,rend,mpNeto,compNeto,beneficioMes,beneficioAnual}=lastCalc;
@@ -1637,205 +1713,117 @@ function genPropuesta(){
   <div class="prop-wrap">
   <div class="prop-doc">
 
-    <!-- HERO -->
-    <div class="p-hero">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="p-logo-ic">MP</div>
-        <div><div class="p-logo-t">mercado pago</div><div class="p-logo-s">Propuesta comercial personalizada</div></div>
+    <!-- HEADER -->
+    <div style="background:#009EE3;padding:14px 20px;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;background:#FFE600;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#1A1A2E;flex-shrink:0">MP</div>
+        <div><div style="font-size:14px;font-weight:700;color:#fff">mercado pago</div><div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:1px">Propuesta comercial personalizada</div></div>
       </div>
-      <div class="p-date"><div class="dl">Emitida el</div><div class="dv">${today}</div></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);text-align:right"><div>${today}</div><div style="margin-top:2px">Vigencia: ${vig}</div></div>
     </div>
 
     <!-- SELLER -->
-    <div class="p-seller">
+    <div style="padding:12px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
       <div>
-        <div class="p-name">${nombre}</div>
-        <div class="p-sub">${cuit?'CUIT '+cuit+' · ':''}${fiscal?fiscal+' · ':''}$${fmt(fact)}/mes · ${PROV_NOMBRE[getGrupo(prov)]} · MP ${RL} ${isPL(cat)?PL_CATS[cat].label:'Cat '+(cat+1)}</div>
+        <div style="font-size:17px;font-weight:700;color:var(--dk)">${nombre}</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px">${cuit?'CUIT '+cuit+' · ':''}${fiscal?fiscal+' · ':''}$${fmt(fact)}/mes · ${PROV_NOMBRE[getGrupo(prov)]}</div>
       </div>
-      ${contacto?`<div class="p-tag"><div class="tl">Para</div><div class="tv">${contacto}</div></div>`:''}
-    </div>
-
-    <!-- AHORRO HERO -->
-    <div class="p-ahorro">
-      <div class="p-ah-main-lbl">Beneficio total estimado el primer año</div>
-      <div class="p-ah-main-val">$${fmt(beneficioTotal)}</div>
-      <div class="p-ah-main-sub">Ahorro en comisiones + rendimiento del saldo</div>
-      <div class="p-ah-grid">
-        <div class="p-ah-item"><div class="al">Ahorro comisiones/mes</div><div class="av">$${fmt(ahorro)}</div><div class="as">vs ${comp.nombre.split(' ')[0]}</div></div>
-        <div class="p-ah-sep"></div>
-        <div class="p-ah-item"><div class="al">Rendimiento saldo/mes</div><div class="av">$${fmt(rend.mes)}</div><div class="as">TNA ${lastCalc.tna}% · interés compuesto</div></div>
-        <div class="p-ah-sep"></div>
-        <div class="p-ah-item"><div class="al">Beneficio total/mes</div><div class="av">$${fmt(beneficioMes)}</div><div class="as">ahorro + rendimiento${extTotal>0?'+extras':''}</div></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <span style="background:#E6F7EE;color:#00A650;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">MP ${RL}</span>
+        <span style="background:#EEF7FD;color:#0077B6;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">${isPL(cat)?PL_CATS[getPLKey(cat,prov)]?.label||PL_CATS[cat+'_resto']?.label||cat:'Cat '+(cat+1)}</span>
+        ${contacto?`<span style="background:var(--amb);color:var(--am);padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">${contacto}</span>`:''}
       </div>
     </div>
 
-    <!-- BARRAS -->
-    <div class="p-sec">
-      <div class="p-sec-title">📊 Costo real sobre tu facturación</div>
-      <div class="p-bar-row">
-        <div class="p-bar-lbl">Mercado Pago</div>
-        <div class="p-bar-trk"><div class="p-bar-fill mp" style="width:${wM}%">$${fmt(mpBruto)}/mes</div></div>
+    <!-- AHORRO -->
+    <div style="background:linear-gradient(135deg,#00A650,#007A3A);padding:16px 20px;color:#fff;text-align:center">
+      <div style="font-size:10px;opacity:.75;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Beneficio total estimado — primer año</div>
+      <div style="font-size:40px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-2px;line-height:1">$${fmt(beneficioTotal)}</div>
+      <div style="font-size:11px;opacity:.65;margin-top:3px">ahorro en comisiones + rendimiento del saldo</div>
+      <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;margin-top:14px">
+        <div style="text-align:center;padding:0 8px"><div style="font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Ahorro tasas/mes</div><div style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace">$${fmt(ahorro)}</div></div>
+        <div style="background:rgba(255,255,255,.2)"></div>
+        <div style="text-align:center;padding:0 8px"><div style="font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Rendimiento/mes</div><div style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace">$${fmt(rend.mes)}</div></div>
+        <div style="background:rgba(255,255,255,.2)"></div>
+        <div style="text-align:center;padding:0 8px"><div style="font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Total/mes</div><div style="font-size:17px;font-weight:700;font-family:'DM Mono',monospace">$${fmt(beneficioMes)}</div></div>
       </div>
-      <div class="p-bar-row">
-        <div class="p-bar-lbl">${comp.nombre.split(' ')[0]}</div>
-        <div class="p-bar-trk"><div class="p-bar-fill comp" style="width:${wC}%">$${fmt(compBruto)}/mes</div></div>
-      </div>
-      <div style="font-size:11px;color:var(--tx3);margin-top:5px">Incluye proc. ${pctD}% débito + financing ${pctC}% en ${cLbl}${extTotal>0?' + $'+fmt(extTotal)+'/mes costos fijos '+comp.nombre.split(' ')[0]:''}</div>
     </div>
 
-    <!-- COSTOS OCULTOS -->
-    ${oCSection}
+    <!-- ECUACIÓN -->
+    <div style="padding:0 20px 16px">
+      <div style="font-size:10px;font-weight:700;color:#0077B6;text-transform:uppercase;letter-spacing:.06em;padding:12px 0 8px;border-top:2px solid #FFE600">Ecuación del costo neto real</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-    <!-- DETALLE DE COSTOS POR MEDIO DE PAGO -->
-    <div class="p-sec">
-      <div class="p-sec-title">💳 Detalle de costos por medio de pago</div>
-      <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px">
-        <thead>
-          <tr style="background:var(--dk)">
-            <th style="padding:9px 12px;text-align:left;color:rgba(255,255,255,.6);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Medio de pago</th>
-            <th style="padding:9px 10px;text-align:right;color:rgba(255,255,255,.5);font-size:10px;font-weight:600">% ventas</th>
-            <th style="padding:9px 10px;text-align:right;color:rgba(255,255,255,.5);font-size:10px;font-weight:600">Monto</th>
-            <th style="padding:9px 10px;text-align:center;color:var(--g);font-size:10px;font-weight:700">Tasa MP ${RL}</th>
-            <th style="padding:9px 10px;text-align:center;color:var(--g);font-size:10px;font-weight:700">Costo MP</th>
-            <th style="padding:9px 10px;text-align:center;color:var(--r);font-size:10px;font-weight:700">Tasa ${comp.nombre.split(' ')[0]}</th>
-            <th style="padding:9px 10px;text-align:center;color:var(--r);font-size:10px;font-weight:700">Costo ${comp.nombre.split(' ')[0]}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- PROCESAMIENTO -->
-          <tr style="background:#f8f8f8">
-            <td colspan="7" style="padding:5px 12px;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bd)">Procesamiento</td>
-          </tr>
-          <!-- Débito -->
-          <tr style="border-bottom:1px solid var(--bd)">
-            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Tarjeta de débito</td>
-            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctD}%</td>
-            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fD)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcD)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(fD*(mpProcD/100))}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcD)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(fD*(compProcD/100))}</td>
-          </tr>
-          <!-- Crédito 1 pago -->
-          <tr style="border-bottom:1px solid var(--bd)">
-            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Crédito 1 pago</td>
-            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctCr}%</td>
-            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fCr)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcC)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(fCr*(mpProcC/100))}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcC)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(fCr*(compProcC/100))}</td>
-          </tr>
-          <!-- FINANCIACIÓN EN CUOTAS -->
-          <tr style="background:#f8f8f8">
-            <td colspan="7" style="padding:5px 12px;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bd)">Financiación en cuotas · ${cLbl}</td>
-          </tr>
-          <!-- Procesamiento cuotas -->
-          <tr style="border-bottom:1px solid var(--bd)">
-            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Procesamiento ${cLbl}</td>
-            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctC}%</td>
-            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fC)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpProcC)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(fC*(mpProcC/100))}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compProcC)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(fC*(compProcC/100))}</td>
-          </tr>
-          <!-- Financiación cuotas -->
-          <tr style="border-bottom:1px solid var(--bd);background:#FFFBEA">
-            <td style="padding:9px 12px;font-weight:600;color:var(--tx)">Financiación ${cLbl}</td>
-            <td style="padding:9px 10px;text-align:right;color:var(--tx2)">${pctC}%</td>
-            <td style="padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--tx2)">$${fmt(fC)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">${pct(mpFin)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">$${fmt(mpFinAmt)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">${pct(compFin)}</td>
-            <td style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--r)">$${fmt(compFinAmt)}</td>
-          </tr>
-          <!-- Subtotal -->
-          <tr style="border-bottom:1px solid var(--bd)">
-            <td colspan="3" style="padding:9px 12px;font-weight:700;color:var(--tx)">Subtotal tasas</td>
-            <td colspan="2" style="padding:9px 10px;text-align:center;background:var(--gb)">
-              <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--g);font-size:13px">$${fmt(mpBruto)}</span>
-            </td>
-            <td colspan="2" style="padding:9px 10px;text-align:center;background:var(--rb)">
-              <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--r);font-size:13px">$${fmt(compBruto-extTotal)}</span>
-            </td>
-          </tr>
-          <!-- Rendimiento -->
-          <tr style="border-bottom:1px solid var(--bd);background:var(--gb)">
-            <td colspan="3" style="padding:9px 12px;font-weight:600;color:var(--g)">↩ Rendimiento saldo (TNA ${lastCalc.tna}%)</td>
-            <td colspan="2" style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;color:var(--g)">− $${fmt(rend.mes)}</td>
-            <td colspan="2" style="padding:9px 10px;text-align:center;font-family:'DM Mono',monospace;color:var(--tx3)">$0</td>
-          </tr>
-          <!-- Costo neto -->
-          <tr style="background:var(--dk)">
-            <td colspan="3" style="padding:10px 12px;font-weight:700;color:var(--y)">Costo neto total / mes</td>
-            <td colspan="2" style="padding:10px 10px;text-align:center">
-              <span style="font-family:'DM Mono',monospace;font-weight:700;color:#4ADE80;font-size:14px">$${fmt(mpNeto)}</span>
-              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">${pct(mpNeto/fact*100)} de tu facturación</div>
-            </td>
-            <td colspan="2" style="padding:10px 10px;text-align:center">
-              <span style="font-family:'DM Mono',monospace;font-weight:700;color:#F87171;font-size:14px">$${fmt(compNeto)}</span>
-              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">${pct(compNeto/fact*100)} de tu facturación</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      </div>
-      <div style="font-size:10px;color:var(--tx3);margin-top:6px">Sin IVA · Tasas según categoría y plazo de liberación seleccionados · Rendimiento estimativo TNA ${lastCalc.tna}%</div>
-    </div>
-
-    ${buildPorQueMP(compFeatures, compArgs, comp)}
-
-    <!-- RENDIMIENTO -->
-    <div class="p-sec">
-      <div class="p-sec-title">📈 Tu saldo rinde mientras dormís</div>
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:14px">Con MP el dinero que entra cada día genera interés compuesto. Con ${comp.nombre.split(' ')[0]}, ese dinero no rinde nada.</div>
-      <div class="rend-grid">
-        <div class="rend-box mp">
-          <div class="rbl">💚 Mercado Pago</div>
-          <div class="rend-row"><span>Aporte diario estimado</span><span class="rv-mp">$${fmt(rend.ap)}</span></div>
-          <div class="rend-row"><span>Intereses en 30 días</span><span class="rv-mp">$${fmt(rend.mes)}</span></div>
-          <div class="rend-row"><span>Intereses en 1 año</span><span class="rv-mp">$${fmt(rend.anual)}</span></div>
+        <div style="background:#E6F7EE;border:1.5px solid #9ADBB8;border-radius:8px;padding:12px 14px;font-size:12px">
+          <div style="font-size:10px;font-weight:700;color:#00A650;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">✅ Mercado Pago ${RL} · ${isPL(cat)?'PL':'Cat '+(cat+1)}</div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Débito (${pct(mpProcD)})</span><span style="font-family:'DM Mono',monospace">$${fmt(fD*(mpProcD/100))}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Créd 1p (${pct(mpProcC)})</span><span style="font-family:'DM Mono',monospace">$${fmt(fCr*(mpProcC/100))}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Cuotas proc. (${pct(mpProcC)})</span><span style="font-family:'DM Mono',monospace">$${fmt(fC*(mpProcC/100))}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666;background:#FFFBEA"><span>Financing ${cLbl} (${pct(mpFin)})</span><span style="font-family:'DM Mono',monospace">$${fmt(mpFinAmt)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Costos extras</span><span style="font-family:'DM Mono',monospace">$0</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Subtotal</span><span style="font-family:'DM Mono',monospace">$${fmt(mpBruto)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#00A650"><span>↩ Rendimiento saldo</span><span style="font-family:'DM Mono',monospace">−$${fmt(rend.mes)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0 0;margin-top:3px;border-top:1.5px solid #9ADBB8;font-weight:700;font-size:13px;color:#00A650"><span>COSTO NETO</span><span style="font-family:'DM Mono',monospace">$${fmt(mpNeto)}</span></div>
+          <div style="font-size:10px;color:#999;text-align:right;margin-top:2px">${pct(mpNeto/fact*100)} de tu facturación</div>
         </div>
-        <div class="rend-box comp">
-          <div class="rbl">🔴 ${comp.nombre.split(' ')[0]}</div>
-          <div class="rend-row"><span>Rendimiento mensual</span><span class="rv-comp">$0</span></div>
-          <div class="rend-row"><span>Rendimiento anual</span><span class="rv-comp">$0</span></div>
-          ${extTotal>0?`<div class="rend-row"><span>Costos extras/mes</span><span class="rv-comp">$${fmt(extTotal)}</span></div>`:''}
+
+        <div style="background:#FEEEEE;border:1.5px solid #F5AAAA;border-radius:8px;padding:12px 14px;font-size:12px">
+          <div style="font-size:10px;font-weight:700;color:#D93025;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">❌ ${comp.nombre}</div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Débito (${pct(compProcD)})</span><span style="font-family:'DM Mono',monospace">$${fmt(fD*(compProcD/100))}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Créd 1p (${pct(compProcC)})</span><span style="font-family:'DM Mono',monospace">$${fmt(fCr*(compProcC/100))}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Cuotas proc. (${pct(compProcC)})</span><span style="font-family:'DM Mono',monospace">$${fmt(fC*(compProcC/100))}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666;background:#FFFBEA"><span>Financing ${cLbl} (${pct(compFin)})</span><span style="font-family:'DM Mono',monospace">$${fmt(compFinAmt)}</span></div>
+          ${extSel.map(e=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#D93025"><span>⚠ ${e.l}</span><span style="font-family:'DM Mono',monospace">$${fmt(e.m)}</span></div>`).join('')}
+          ${adelOn&&adelCosto>0?`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#D93025"><span>⚠ Cobro anticipado (${adelDias}d)</span><span style="font-family:'DM Mono',monospace">$${fmt(adelCosto)}</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#666"><span>Subtotal</span><span style="font-family:'DM Mono',monospace">$${fmt(compBruto)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(0,0,0,.07);color:#999"><span>Rendimiento saldo</span><span style="font-family:'DM Mono',monospace">$0</span></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0 0;margin-top:3px;border-top:1.5px solid #F5AAAA;font-weight:700;font-size:13px;color:#D93025"><span>COSTO NETO</span><span style="font-family:'DM Mono',monospace">$${fmt(compNeto)}</span></div>
+          <div style="font-size:10px;color:#999;text-align:right;margin-top:2px">${pct(compNeto/fact*100)} de tu facturación</div>
         </div>
+
       </div>
-      <div style="font-size:10px;color:var(--tx3);margin-top:8px">* TNA ${lastCalc.tna}% · interés compuesto con aportes diarios. Rendimientos estimativos, no garantizan resultado futuro.</div>
     </div>
 
-    <!-- COEFICIENTES -->
-    <div class="p-sec">
-      <div class="p-sec-title">🧮 Coeficientes para trasladar a tu cliente</div>
-      <div class="coef-grid">${coefsProp}</div>
-      <div style="font-size:11px;color:var(--tx3);margin-top:8px">Multiplicá tu precio por el coeficiente para que el cliente asuma el costo de las cuotas.</div>
+    <!-- POR QUÉ MP — tarjetas en fila -->
+    <div style="padding:0 20px 16px">
+      <div style="font-size:10px;font-weight:700;color:#0077B6;text-transform:uppercase;letter-spacing:.06em;padding:0 0 8px;border-top:2px solid #FFE600;padding-top:12px">Por qué elegir Mercado Pago</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:7px">
+        <div style="background:#E6F7EE;border:0.5px solid #9ADBB8;border-radius:8px;padding:10px 8px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">⚡</div>
+          <div style="font-size:11px;font-weight:700;color:#1A1A2E;margin-bottom:3px;line-height:1.3">Cobrás al instante</div>
+          <div style="font-size:10px;color:#666;line-height:1.35">Sin esperar días para tener tu plata</div>
+        </div>
+        <div style="background:#E6F7EE;border:0.5px solid #9ADBB8;border-radius:8px;padding:10px 8px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">📈</div>
+          <div style="font-size:11px;font-weight:700;color:#1A1A2E;margin-bottom:3px;line-height:1.3">Tu saldo rinde</div>
+          <div style="font-size:10px;color:#666;line-height:1.35">TNA ${lastCalc.tna}% interés compuesto diario</div>
+        </div>
+        <div style="background:#E6F7EE;border:0.5px solid #9ADBB8;border-radius:8px;padding:10px 8px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">🆓</div>
+          <div style="font-size:11px;font-weight:700;color:#1A1A2E;margin-bottom:3px;line-height:1.3">Sin costos fijos</div>
+          <div style="font-size:10px;color:#666;line-height:1.35">Sin mantenimiento ni CC bancaria</div>
+        </div>
+        <div style="background:#E6F7EE;border:0.5px solid #9ADBB8;border-radius:8px;padding:10px 8px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">🛡️</div>
+          <div style="font-size:11px;font-weight:700;color:#1A1A2E;margin-bottom:3px;line-height:1.3">Seguro contracargos</div>
+          <div style="font-size:10px;color:#666;line-height:1.35">${mpCbOn&&mpCbMonto>0?'Cobertura aprox. $'+fmt(mpCbMonto)+'/mes':'Protección ante disputas de pago'}</div>
+        </div>
+        ${mpCredOn&&mpCredMonto>0?`<div style="background:#E6F7EE;border:0.5px solid #9ADBB8;border-radius:8px;padding:10px 8px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">💰</div>
+          <div style="font-size:11px;font-weight:700;color:#1A1A2E;margin-bottom:3px;line-height:1.3">Crédito disponible</div>
+          <div style="font-size:10px;color:#666;line-height:1.35">$${fmt(mpCredMonto)} pre-aprobados · TNA ${mpCredTna}%</div>
+        </div>`:''}
+      </div>
     </div>
 
-    <!-- VIGENCIA -->
-    <div class="p-vig">⏳ Vigencia de esta propuesta: <strong style="margin:0 5px">${vig}</strong> a partir del ${today}</div>
-
-    <!-- RESUMEN FINAL -->
-    <div class="p-resumen">
-      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Lo que ganás eligiendo Mercado Pago</div>
-      <div class="p-resumen-grid">
-        <div class="p-res-item"><div class="prl">Ahorro tasas/mes</div><div class="prv">$${fmt(ahorro)}</div></div>
-        <div class="p-res-item"><div class="prl">Rendimiento/mes</div><div class="prv">$${fmt(rend.mes)}</div></div>
-        ${extTotal>0?`<div class="p-res-item"><div class="prl">Extras evitados/mes</div><div class="prv">$${fmt(extTotal)}</div></div>`:''}
-        <div class="p-res-item hi"><div class="prl">Beneficio total/mes</div><div class="prv">$${fmt(beneficioMes)}</div></div>
-        <div class="p-res-item hi"><div class="prl">Beneficio total/año</div><div class="prv">$${fmt(beneficioAnual)}</div></div>
+    <!-- FOOTER -->
+    <div style="background:#009EE3;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#fff">${asesor||'Ejecutivo de cuenta'}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.85);margin-top:2px">${email?email+'@mercadolibre.com':''} ${tel?'· '+tel:''}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:1px">Equipo Principalidad · Longtail & SMBs MLA</div>
       </div>
-      <div class="p-footer">
-        <div class="p-asesor">
-          <div class="pan">${asesor||'Ejecutivo de cuenta'}</div>
-          <div class="pac">${email?email+'@mercadolibre.com':''} ${tel?'· '+tel:''}</div>
-          <div class="pac">Equipo Principalidad · Longtail & SMBs MLA</div>
-        </div>
-        <div class="p-legal">Simulación estimativa · Sin IVA · Sujeto a validación de perfil · Tasas vigentes al ${today}</div>
-      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.65);text-align:right;max-width:220px;line-height:1.5">Simulación estimativa · Sin IVA · Tasas vigentes al ${today}</div>
     </div>
 
   </div>
