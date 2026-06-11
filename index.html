@@ -835,10 +835,10 @@ let editId = null;
 let lastCalc = null;
 
 function loadComps(){
-  try{ const r=localStorage.getItem(SK); comps=r?JSON.parse(r):JSON.parse(JSON.stringify(DEFAULT_COMPS)); }
-  catch(e){ comps=JSON.parse(JSON.stringify(DEFAULT_COMPS)); }
+  // Siempre carga los datos originales — los cambios en sesión no se persisten
+  comps = JSON.parse(JSON.stringify(DEFAULT_COMPS));
 }
-function saveComps(){ try{localStorage.setItem(SK,JSON.stringify(comps));}catch(e){} }
+function saveComps(){ /* no persiste — vuelve a originales al refrescar */ }
 
 // ════════════════════════════════════
 // HELPERS
